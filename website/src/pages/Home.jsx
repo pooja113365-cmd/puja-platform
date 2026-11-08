@@ -205,7 +205,7 @@ const HERO_SIX_FEATURES = [
 /* Animated Swaying Hanging Diyas with Flickering Flames (Visible on Mobile & Desktop) */
 function HangingDiyas() {
   return (
-    <div className="pointer-events-none absolute left-1 top-0 z-10 block h-44 w-24 origin-top-left scale-[0.72] select-none sm:scale-90 lg:left-2 lg:h-52 lg:w-28 lg:scale-100" aria-hidden="true">
+    <div className="pointer-events-none absolute -left-1 top-0 z-10 block h-40 w-20 origin-top-left scale-[0.58] select-none sm:left-1 sm:scale-90 lg:left-2 lg:h-52 lg:w-28 lg:scale-100" aria-hidden="true">
       {/* Left Swaying Diya */}
       <motion.svg
         viewBox="0 0 60 200"
@@ -302,7 +302,7 @@ function LotusBadgeIcon() {
 
 function OmOrnamentDivider() {
   return (
-    <div className="mx-auto my-2.5 flex max-w-xs items-center gap-3 sm:max-w-md lg:mx-0" aria-hidden="true">
+    <div className="mx-auto my-1.5 flex max-w-[260px] items-center gap-2.5 sm:my-2.5 sm:max-w-md sm:gap-3 lg:mx-0" aria-hidden="true">
       <div className="flex flex-1 items-center">
         <div className="h-[1.5px] flex-1 bg-gradient-to-r from-transparent via-[#F7B928]/85 to-[#F7B928]" />
         <span className="h-1.5 w-1.5 rotate-45 bg-[#F7B928]" />
@@ -573,7 +573,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="container-x relative z-10 grid w-full items-center gap-5 pt-6 pb-2 sm:py-8 lg:grid-cols-12 lg:gap-6">
+        <div className="container-x relative z-10 grid w-full items-center gap-3.5 pt-3.5 pb-2 sm:gap-5 sm:py-8 lg:grid-cols-12 lg:gap-6">
           {/* Left Column (Heading, Divider, Subtitle, Search Bar + Desktop Feature Cards) */}
           <motion.div
             initial={{ opacity: 0, y: 14 }}
@@ -582,7 +582,7 @@ export default function Home() {
             className="text-center lg:col-span-6 lg:text-left"
           >
             {/* 3-Line Serif Heading */}
-            <h1 className="font-serif text-[2.35rem] font-bold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-[3.25rem]">
+            <h1 className="font-serif text-[1.95rem] font-bold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-[3.25rem]">
               Book Pujas, Buy
               <br />
               Puja Items &amp;
@@ -593,20 +593,17 @@ export default function Home() {
             {/* Ornamental Gold Om Divider */}
             <OmOrnamentDivider />
 
-            {/* Subtitle with Shield-Check Icon on Mobile */}
-            <div className="mx-auto flex max-w-md items-center justify-center gap-2.5 text-left lg:mx-0 lg:max-w-xl lg:justify-start">
-              <span className="shrink-0 lg:hidden">
-                <IconShieldSvg />
-              </span>
+            {/* Subtitle (Desktop Only) */}
+            <div className="mx-auto hidden max-w-md items-center justify-center gap-2.5 text-left lg:mx-0 lg:flex lg:max-w-xl lg:justify-start">
               <p className="text-xs font-medium leading-snug text-white/95 sm:text-base">
-                <span className="hidden lg:inline">• </span>Your Trusted Platform for Online Puja, Puja Items &amp; Verified Priests in Hyderabad.
+                • Your Trusted Platform for Online Puja, Puja Items &amp; Verified Priests in Hyderabad.
               </p>
             </div>
 
             {/* White Pill Search Bar with Gold/Orange CTA */}
             <form
               onSubmit={handleSearch}
-              className="mx-auto mt-4 flex max-w-xl items-center gap-1.5 rounded-full border border-[#F7B928]/45 bg-white p-1.5 shadow-xl lg:mx-0"
+              className="mx-auto mt-3 flex max-w-xl items-center gap-1.5 rounded-full border border-[#F7B928]/45 bg-white p-1 shadow-xl sm:mt-4 sm:p-1.5 lg:mx-0"
             >
               <Search className="ml-3 h-4 w-4 shrink-0 text-[#300B32]" />
               <input

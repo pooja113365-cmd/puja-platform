@@ -45,9 +45,9 @@ function TypewriterTagline() {
   }, [displayed, isDeleting]);
 
   return (
-    <span className="flex h-3.5 min-w-[135px] items-center text-[9px] font-semibold tracking-wider text-white/95 sm:min-w-[168px] sm:text-[10px]">
-      <span>{displayed}</span>
-      <span className="ml-0.5 inline-block h-2.5 w-[1.5px] animate-pulse bg-[#F7B928]" />
+    <span className="inline-flex h-3.5 min-w-[165px] items-center whitespace-nowrap text-[10px] font-semibold tracking-wide text-white/95">
+      <span className="whitespace-nowrap">{displayed}</span>
+      <span className="ml-0.5 inline-block h-2.5 w-[1.5px] shrink-0 animate-pulse bg-[#F7B928]" />
     </span>
   );
 }
@@ -111,32 +111,32 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#F7B928]/35 bg-[#300B32] shadow-lg backdrop-blur">
-      <div className="container-x flex h-16 items-center justify-between gap-2 sm:gap-4">
-        <div className="flex items-center gap-2.5 sm:gap-6">
-          <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
-            <GetPujaLotusLogo className="h-9 w-9 sm:h-11 sm:w-11" />
-            <span className="h-7 w-[1px] bg-[#F7B928]/60 sm:h-8" aria-hidden="true" />
-            <div>
+      <div className="container-x flex h-16 items-center justify-between gap-4">
+        <div className="flex items-center gap-6">
+          <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group">
+            <GetPujaLotusLogo className="h-10 w-10 sm:h-11 sm:w-11" />
+            <span className="h-8 w-[1px] shrink-0 bg-[#F7B928]/60" aria-hidden="true" />
+            <div className="flex min-w-0 flex-col justify-center py-0.5">
               <div className="font-serif text-xl font-bold leading-none tracking-tight text-white sm:text-2xl">
                 Get<span className="text-[#F7B928]">Puja</span>
               </div>
-              <div className="mt-0.5 sm:mt-1">
+              <div className="mt-0.5">
                 <TypewriterTagline />
               </div>
             </div>
           </Link>
 
-          {/* Interactive Location Dropdown (Visible on both Mobile & Desktop in same colors) */}
-          <div className="relative" ref={locRef}>
+          {/* Interactive Location Dropdown */}
+          <div className="relative hidden sm:block" ref={locRef}>
             <button
               type="button"
               onClick={() => setLocOpen((v) => !v)}
-              className="inline-flex items-center gap-1 rounded-full border border-[#F7B928]/55 bg-[#3E1041]/80 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:border-[#F7B928] hover:bg-[#3E1041] sm:gap-1.5 sm:px-3.5 sm:py-1.5 sm:text-xs"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#F7B928]/55 bg-[#3E1041]/80 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:border-[#F7B928] hover:bg-[#3E1041]"
             >
-              <MapPin className="h-3 w-3 shrink-0 text-[#F7B928] sm:h-3.5 sm:w-3.5" />
-              <span className="max-w-[72px] truncate sm:max-w-none">{selectedLoc.short}</span>
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-[#F7B928]" />
+              <span>{selectedLoc.short}</span>
               <ChevronDown
-                className={`h-3 w-3 shrink-0 text-[#F7B928] transition-transform duration-200 sm:h-3.5 sm:w-3.5 ${
+                className={`h-3.5 w-3.5 shrink-0 text-[#F7B928] transition-transform duration-200 ${
                   locOpen ? 'rotate-180' : ''
                 }`}
               />
