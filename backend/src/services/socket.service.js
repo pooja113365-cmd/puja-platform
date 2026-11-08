@@ -11,19 +11,7 @@ const STAFF = ['admin', 'ops'];
 function init(httpServer) {
   io = new Server(httpServer, {
     cors: {
-      origin: (origin, cb) => {
-        if (
-          !origin ||
-          env.clientOrigins.includes('*') ||
-          env.clientOrigins.includes(origin) ||
-          /\.(onrender\.com|vercel\.app|netlify\.app)$/.test(origin) ||
-          /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
-        ) {
-          return cb(null, true);
-        }
-        return cb(new Error('Not allowed by CORS'));
-      },
-      credentials: true,
+      origin: '*',
     },
   });
 

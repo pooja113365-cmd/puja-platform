@@ -13,24 +13,7 @@ const app = express();
 app.set('trust proxy', 1);
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      // Allow non-browser clients, whitelisted origins, and deployed frontend domains (.onrender.com, .vercel.app, .netlify.app).
-      if (
-        !origin ||
-        env.clientOrigins.includes('*') ||
-        env.clientOrigins.includes(origin) ||
-        /\.(onrender\.com|vercel\.app|netlify\.app)$/.test(origin) ||
-        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
-      ) {
-        return cb(null, true);
-      }
-      return cb(new Error('Not allowed by CORS'));
-    },
-    credentials: true,
-  })
-);
+app.use(cors({ origin: '*' }));
 app.use(compression());
 if (!env.isTest) app.use(morgan(env.isProd ? 'combined' : 'dev'));
 

@@ -13,27 +13,28 @@ export default function PujaCard({ puja }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.22 }}
+      initial={{ opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
       className="h-full"
     >
       <Link
         to={`/pujas/${puja._id}`}
-        className="card group flex h-full flex-col overflow-hidden border-gold-300/70 hover:-translate-y-1 hover:shadow-lg hover:shadow-amber-900/10 transition-all duration-200"
+        className="card group flex h-full flex-col overflow-hidden border-[#F7B928]/60 hover:-translate-y-1 hover:border-[#F58216] hover:shadow-xl hover:shadow-amber-900/10 transition-all duration-200"
       >
-        <div className="relative h-52 w-full overflow-hidden bg-maroon-900">
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#300B32]">
           <img
             src={imgUrl}
             alt={puja.name}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#300B32]/90 via-black/15 to-transparent" />
 
           {/* Category Pill */}
           <div className="absolute left-3 right-3 top-3 flex items-center justify-between gap-2">
-            <span className="rounded-full border border-gold-300/70 bg-maroon-900/90 px-3 py-0.5 text-[11px] font-bold text-gold-300">
+            <span className="rounded-full border border-[#F7B928]/80 bg-[#300B32]/90 px-3 py-0.5 text-[11px] font-bold text-[#F7B928]">
               {puja.category}
             </span>
             {hasSamagri && (
@@ -45,16 +46,16 @@ export default function PujaCard({ puja }) {
 
           {/* Title & Quick Info Overlay on Image */}
           <div className="absolute bottom-3 left-3.5 right-3.5 text-white">
-            <h3 className="font-serif text-2xl font-bold leading-tight drop-shadow">
+            <h3 className="font-serif text-xl font-bold leading-snug drop-shadow sm:text-2xl">
               {puja.name}
             </h3>
-            <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-cream-100/95">
+            <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-white/95">
               <span className="inline-flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5 text-gold-400" />
+                <Clock className="h-3.5 w-3.5 text-[#F7B928]" />
                 {duration(puja.durationMinutes)}
               </span>
               <span className="inline-flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5 text-gold-400" />
+                <MapPin className="h-3.5 w-3.5 text-[#F7B928]" />
                 {locationTypes.map((l) => LOCATION_LABEL[l] || l).join(' · ')}
               </span>
             </div>
@@ -62,16 +63,16 @@ export default function PujaCard({ puja }) {
         </div>
 
         <div className="flex flex-1 flex-col justify-between p-4">
-          <p className="line-clamp-1 text-xs text-maroon-700/85">
+          <p className="line-clamp-1 text-xs text-[#300B32]/80">
             {puja.description}
           </p>
 
-          <div className="mt-3 flex items-center justify-between border-t border-gold-300/40 pt-3">
+          <div className="mt-3 flex items-center justify-between border-t border-[#F7B928]/35 pt-3">
             <div>
-              <span className="text-xs text-maroon-700/75">Starts at </span>
-              <b className="font-serif text-xl font-bold text-maroon-900">{inr(from)}</b>
+              <span className="text-xs text-[#300B32]/70">Starts at </span>
+              <b className="font-serif text-xl font-bold text-[#300B32]">{inr(from)}</b>
             </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-saffron-500 px-4 py-1.5 text-xs font-bold text-white shadow-sm group-hover:bg-saffron-600 transition-all duration-200 active:scale-[0.98]">
+            <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#F7B928] to-[#F58216] px-4 py-1.5 text-xs font-extrabold text-[#300B32] shadow-sm group-hover:brightness-105 transition-all duration-200 active:scale-[0.98]">
               Book Now <ArrowRight className="h-3.5 w-3.5" />
             </span>
           </div>

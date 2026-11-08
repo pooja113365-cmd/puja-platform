@@ -10,7 +10,7 @@ export default function Footer() {
           <div className="flex items-center gap-2.5">
             <GetPujaLotusLogo className="h-9 w-9" />
             <span className="font-serif text-2xl font-bold text-white">
-              Get<span className="text-gold-400">Puja</span>.com
+              Get<span className="text-gold-400">Puja</span>
             </span>
           </div>
           <p className="mt-2 text-xs font-semibold text-gold-300">
@@ -62,7 +62,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t border-white/10 py-4 text-center text-xs text-cream-200/60">
-        © {new Date().getFullYear()} GetPuja.com — International Business Network (IBN). All rights reserved.
+        © {new Date().getFullYear()} GetPuja — International Business Network (IBN). All rights reserved.
       </div>
     </footer>
   );
