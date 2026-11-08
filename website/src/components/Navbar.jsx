@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Menu, X, LogOut, User, MapPin, ChevronDown, Check } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useBookingModal } from '../context/BookingModalContext';
 
 const HYDERABAD_LOCATIONS = [
   { label: 'Hyderabad (All Areas)', short: 'Hyderabad', area: '' },
@@ -70,6 +71,7 @@ export function GetPujaLotusLogo({ className = 'h-10 w-10' }) {
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const { openBookingModal } = useBookingModal();
   const [open, setOpen] = useState(false);
   const [locOpen, setLocOpen] = useState(false);
   const [selectedLoc, setSelectedLoc] = useState(HYDERABAD_LOCATIONS[0]);
@@ -204,12 +206,13 @@ export default function Navbar() {
               <NavLink to="/login" className={cls}>
                 Login
               </NavLink>
-              <Link
-                to="/pujas"
+              <button
+                type="button"
+                onClick={() => openBookingModal({ serviceTitle: 'Vedic Puja / Homam Service' })}
                 className="rounded-xl bg-gradient-to-b from-[#F7B928] to-[#F58216] px-5 py-2 text-xs font-extrabold text-[#300B32] shadow-md transition hover:brightness-105 active:scale-[0.98]"
               >
                 Book a Puja
-              </Link>
+              </button>
             </>
           )}
         </nav>

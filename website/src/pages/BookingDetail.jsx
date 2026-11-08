@@ -250,21 +250,18 @@ export default function BookingDetail() {
 
         <aside className="space-y-4">
           <div className="card p-5 text-sm">
-            <h2 className="text-xl text-maroon-800">Payment Summary</h2>
-            <div className="mt-2 flex justify-between"><span>Total</span><b>{inr(b.pricing.total)}</b></div>
-            <div className="flex justify-between"><span>Paid</span><span>{inr(b.payment.amountPaid)}</span></div>
-            <div className="flex justify-between border-t border-gold-300/50 pt-2"><span>Balance</span><b>{inr(due)}</b></div>
-            {canPay && (
-              <button
-                className="btn-primary mt-4 w-full"
-                disabled={busy}
-                onClick={() => run(async () => {
-                  const r = await payForBooking(b._id);
-                  if (r === 'paid') setNotice('Payment verified and recorded!');
-                })}
-              >
-                Pay {inr(b.payment.status === 'unpaid' && b.paymentOption === 'advance' ? b.pricing.advanceAmount : due)}
-              </button>
+            <h2 className="text-xl text-maroon-800">Submitted Requirement Details</h2>
+            <p className="mt-2 text-xs text-maroon-800">
+              <b>Devotee Name:</b> {b.customerName || b.customer?.name}
+            </p>
+            <p className="mt-1 text-xs text-maroon-800">
+              <b>Mobile Number:</b> +91 {b.customerPhone || b.customer?.phone}
+            </p>
+            {(b.serviceDetails || b.notes) && (
+              <div className="mt-2 rounded-xl border border-gold-300/60 bg-cream-100 p-3 text-xs text-maroon-900">
+                <b>Service Details:</b>
+                <p className="mt-1 whitespace-pre-wrap">{b.serviceDetails || b.notes}</p>
+              </div>
             )}
           </div>
 

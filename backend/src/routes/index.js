@@ -64,7 +64,8 @@ router.patch('/muhurthams/:id', protect, authorize(...STAFF), validateId(), cata
 router.delete('/muhurthams/:id', protect, authorize(...STAFF), validateId(), catalog.deleteMuhurtham);
 
 // ---- Bookings ----
-router.post('/bookings', protect, authorize('customer'), booking.create);
+router.post('/bookings/inquiry', optionalAuth, booking.createInquiry);
+router.post('/bookings', optionalAuth, booking.create);
 router.get('/bookings', protect, booking.list);
 router.get('/bookings/:id', protect, validateId(), booking.getOne);
 router.patch('/bookings/:id/status', protect, validateId(), booking.updateStatus);

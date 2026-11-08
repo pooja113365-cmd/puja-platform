@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock, MapPin, CheckCircle2, Package, ShieldCheck, Check, UserCheck, Gift } from 'lucide-react';
+import { Clock, MapPin, CheckCircle2, Package, ShieldCheck, Check, UserCheck, Gift, ArrowRight } from 'lucide-react';
 import useFetch from '../hooks/useFetch';
 import { ProfileHeaderSkeleton, ErrorState } from '../components/States';
-import { inr, duration, LOCATION_LABEL } from '../utils/format';
+import { duration, LOCATION_LABEL } from '../utils/format';
 import { getPujaImage } from '../utils/media';
+import { useBookingModal } from '../context/BookingModalContext';
 
 export default function PujaDetail() {
   const { id } = useParams();
   const { data: puja, loading, error, reload } = useFetch(`/pujas/${id}`);
+  const { openBookingModal } = useBookingModal();
   const [selectedTierName, setSelectedTierName] = useState('');
 
   useEffect(() => {
@@ -118,7 +120,7 @@ export default function PujaDetail() {
                 </h2>
                 {puja.samagriKit && (
                   <span className="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800">
-                    Full Kit: {inr(puja.samagriKit.price)}
+                    ✓ Complete Doorstep Samagri Kit Available
                   </span>
                 )}
               </div>
@@ -189,7 +191,6 @@ export default function PujaDetail() {
                           </span>
                         )}
                       </div>
-                      <span className="font-serif text-xl font-bold text-maroon-900">{inr(t.price)}</span>
                     </div>
                     {t.description && (
                       <p className="mt-1 pl-7 text-xs text-maroon-700/80 line-clamp-2">{t.description}</p>
@@ -199,15 +200,22 @@ export default function PujaDetail() {
               })}
             </ul>
 
-            <Link
-              to={`/book/${puja._id}?tier=${encodeURIComponent(activeTier || '')}`}
+            <button
+              type="button"
+              onClick={() =>
+                openBookingModal({
+                  puja,
+                  serviceTitle: `${puja.name} (${activeTier || 'Standard'})`,
+                  tierName: activeTier || 'Standard',
+                })
+              }
               className="btn-primary mt-5 w-full !py-3 text-base shadow-md active:scale-[0.98]"
             >
-              Book {activeTier} Package →
-            </Link>
+              Book {activeTier} Package <ArrowRight className="h-4 w-4" />
+            </button>
             <p className="mt-2.5 flex items-center justify-center gap-1.5 text-center text-xs text-maroon-700/80">
               <ShieldCheck className="h-4 w-4 text-emerald-600" />
-              Verified Priests · Pay Only 30% Advance
+              Verified Veda Patasala Priests · Complete Samagri Support
             </p>
           </div>
         </aside>

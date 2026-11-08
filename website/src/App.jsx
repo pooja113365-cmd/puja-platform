@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
+import { BookingModalProvider } from './context/BookingModalContext';
 import Home from './pages/Home';
 import Pujas from './pages/Pujas';
 import PujaDetail from './pages/PujaDetail';
@@ -55,23 +56,25 @@ function Layout() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route index element={<Home />} />
-        <Route path="pujas" element={<Pujas />} />
-        <Route path="pujas/:id" element={<PujaDetail />} />
-        <Route path="purohits" element={<Purohits />} />
-        <Route path="purohits/:id" element={<PanditDetail />} />
-        <Route path="login" element={<Login />} />
-        <Route path="register" element={<Register />} />
-        <Route element={<ProtectedRoute />}>
+    <BookingModalProvider>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="pujas" element={<Pujas />} />
+          <Route path="pujas/:id" element={<PujaDetail />} />
+          <Route path="purohits" element={<Purohits />} />
+          <Route path="purohits/:id" element={<PanditDetail />} />
           <Route path="book/:pujaId" element={<Booking />} />
-          <Route path="bookings" element={<MyBookings />} />
-          <Route path="bookings/:id" element={<BookingDetail />} />
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="bookings" element={<MyBookings />} />
+            <Route path="bookings/:id" element={<BookingDetail />} />
+          </Route>
+          <Route path="*" element={<NotFound />} />
         </Route>
-        <Route path="*" element={<NotFound />} />
-      </Route>
-    </Routes>
+      </Routes>
+    </BookingModalProvider>
   );
 }
 

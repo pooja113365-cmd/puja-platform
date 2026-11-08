@@ -14,14 +14,16 @@ import {
 } from 'lucide-react';
 import useFetch from '../hooks/useFetch';
 import { ProfileHeaderSkeleton, ErrorState, Stars } from '../components/States';
-import { inr, toYMD, fmtDate } from '../utils/format';
+import { toYMD, fmtDate } from '../utils/format';
 import { getPanditPhoto } from '../utils/media';
+import { useBookingModal } from '../context/BookingModalContext';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export default function PanditDetail() {
   const { id } = useParams();
   const { data, loading, error, reload } = useFetch(`/pandits/${id}`);
+  const { openBookingModal } = useBookingModal();
 
   const calendarDays = useMemo(() => {
     const out = [];
@@ -115,11 +117,6 @@ export default function PanditDetail() {
                   </li>
                 )}
               </ul>
-
-              <div className="mt-4 inline-flex items-baseline gap-2 rounded-xl border border-gold-300/60 bg-cream-100 px-4 py-2 text-sm">
-                <span className="text-maroon-700">Standard Ritual Dakshina:</span>
-                <b className="text-xl font-bold text-maroon-900">{inr(p.pujaCharge)}</b>
-              </div>
             </div>
           </div>
 
@@ -148,9 +145,18 @@ export default function PanditDetail() {
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link to="/pujas" className="btn-primary !px-6 !py-3">
+            <button
+              type="button"
+              onClick={() =>
+                openBookingModal({
+                  pandit: p,
+                  serviceTitle: `Priest Booking — ${name}`,
+                })
+              }
+              className="btn-primary !px-6 !py-3"
+            >
               Book {name.split(' ')[1] || name} for Your Puja
-            </Link>
+            </button>
           </div>
         </motion.div>
 

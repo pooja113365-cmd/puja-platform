@@ -22,6 +22,11 @@ import { inr, fmtDate, fmtDateTime, STATUS_META, NEXT_STATUS, LOCATION_LABEL } f
 
 function MuhurthamSlipModal({ booking: b, onClose }) {
   if (!b) return null;
+  const custName = b.customerName || b.customer?.name || 'Devotee';
+  const custPhone = b.customerPhone || b.customer?.phone || '9000000001';
+  const custEmail = b.customerEmail || b.customer?.email || '';
+  const serviceName = b.serviceTitle || b.puja?.name || 'Vedic Puja Service';
+  const detailsText = b.serviceDetails || b.notes || '';
   const locality = b.address?.line1
     ? `${b.address.line1}, ${b.address.city || 'Hyderabad'} ${b.address.pincode || ''}`.trim()
     : b.locationType === 'online'
@@ -29,15 +34,15 @@ function MuhurthamSlipModal({ booking: b, onClose }) {
       : 'Hyderabad Temple Venue';
 
   return (
-    <Modal title={`Muhurtham & Dispatch Slip — #${b.bookingNumber}`} onClose={onClose} wide>
+    <Modal title={`CRM Booking & Dispatch Slip — #${b.bookingNumber}`} onClose={onClose} wide>
       <div className="space-y-4 text-sm">
         <div className="rounded-2xl border-2 border-amber-300 bg-amber-50/50 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200 pb-3">
             <div>
               <span className="text-[10px] font-bold uppercase tracking-widest text-saffron-700">
-                VedaPujas Hyderabad · Official Ritual Dispatch Slip
+                GetPuja.com Hyderabad · Official CRM Booking Record
               </span>
-              <h3 className="font-serif text-xl font-bold text-maroon-900">{b.puja?.name}</h3>
+              <h3 className="font-serif text-xl font-bold text-maroon-900">{serviceName}</h3>
             </div>
             <div className="text-right">
               <span className="rounded-lg bg-maroon-900 px-2.5 py-1 font-mono text-xs font-bold text-gold-300">
@@ -52,71 +57,53 @@ function MuhurthamSlipModal({ booking: b, onClose }) {
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <div className="rounded-xl bg-white p-3 border border-amber-200/80">
               <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-maroon-700">
-                <CalendarClock className="h-3.5 w-3.5 text-saffron-600" /> Auspicious Muhurtham Window
+                <MapPin className="h-3.5 w-3.5 text-saffron-600" /> Customer Name &amp; Contact
+              </div>
+              <p className="mt-1 font-semibold text-maroon-900">{custName}</p>
+              <p className="text-xs font-semibold text-saffron-700">
+                Mobile: +91 {custPhone} {custEmail ? `· ${custEmail}` : ''}
+              </p>
+              <p className="mt-1 text-xs font-medium text-maroon-800">
+                {LOCATION_LABEL[b.locationType]}: {locality}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-white p-3 border border-amber-200/80">
+              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-maroon-700">
+                <CalendarClock className="h-3.5 w-3.5 text-saffron-600" /> Common Service Details
               </div>
               <p className="mt-1 font-semibold text-maroon-900">{fmtDate(b.date)}</p>
               <p className="text-xs text-stone-600">
                 {b.timeSlot?.label} · <b>{b.timeSlot?.startTime} – {b.timeSlot?.endTime} IST</b>
               </p>
               <p className="mt-1 text-xs text-maroon-800">
-                <b>Mantra Language:</b> {b.language} · <b>Package:</b> {b.tierName}
-              </p>
-            </div>
-
-            <div className="rounded-xl bg-white p-3 border border-amber-200/80">
-              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-maroon-700">
-                <MapPin className="h-3.5 w-3.5 text-saffron-600" /> Devotee &amp; Hyderabad Locality
-              </div>
-              <p className="mt-1 font-semibold text-maroon-900">{b.customer?.name}</p>
-              <p className="text-xs text-stone-600">
-                +91 {b.customer?.phone || '9000000001'} · {b.customer?.email}
-              </p>
-              <p className="mt-1 text-xs font-medium text-maroon-800">
-                {LOCATION_LABEL[b.locationType]}: {locality}
+                <b>Language:</b> {b.language} · <b>Package:</b> {b.tierName} · <b>Samagri Kit:</b>{' '}
+                {b.includeSamagri ? '✓ Yes (Included)' : 'No (Self-Arranged)'}
               </p>
             </div>
           </div>
 
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-xl bg-white p-3 border border-amber-200/80">
-              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-maroon-700">
-                <UserCheck className="h-3.5 w-3.5 text-emerald-600" /> Assigned Veda Patasala Scholar
+          {detailsText && (
+            <div className="mt-3 rounded-xl bg-white p-3.5 border-2 border-amber-300 text-xs">
+              <div className="font-bold uppercase tracking-wider text-maroon-800">
+                Customer’s Detailed Service Explanation:
               </div>
-              {b.pandit ? (
-                <>
-                  <p className="mt-1 font-semibold text-maroon-900">{b.pandit.user?.name}</p>
-                  <p className="text-xs text-stone-600">
-                    Phone: +91 {b.pandit.user?.phone || '9100000001'} · Verified KYC Scholar
-                  </p>
-                </>
-              ) : (
-                <p className="mt-1 text-xs font-semibold text-red-700">Pending Purohit Assignment</p>
-              )}
-            </div>
-
-            <div className="rounded-xl bg-white p-3 border border-amber-200/80">
-              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-maroon-700">
-                <PackageCheck className="h-3.5 w-3.5 text-emerald-600" /> Samagri &amp; Dakshina Summary
-              </div>
-              <p className="mt-1 text-xs font-semibold text-maroon-900">
-                Samagri Status:{' '}
-                {b.includeSamagri ? (
-                  <span className="text-emerald-700">✓ Doorstep Kit Included ({inr(b.pricing?.samagriPrice)})</span>
-                ) : (
-                  <span className="text-stone-600">Devotee Self-Arranged Checklist</span>
-                )}
-              </p>
-              <p className="mt-1 text-xs text-stone-600">
-                Total: <b>{inr(b.pricing?.total)}</b> · Paid: <b>{inr(b.payment?.amountPaid)}</b> ({b.payment?.status?.replace('_', ' ')})
-              </p>
-            </div>
-          </div>
-
-          {b.notes && (
-            <div className="mt-3 rounded-xl bg-white p-3 border border-amber-200/80 text-xs">
-              <b className="text-maroon-800">Gotram / Sankalpam Notes:</b> {b.notes}
+              <p className="mt-1 whitespace-pre-wrap text-sm text-maroon-900">{detailsText}</p>
             </div>
           )}
+
+          <div className="mt-3 rounded-xl bg-white p-3 border border-amber-200/80">
+            <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-maroon-700">
+              <UserCheck className="h-3.5 w-3.5 text-emerald-600" /> Assigned Veda Patasala Scholar
+            </div>
+            {b.pandit ? (
+              <p className="mt-1 text-xs font-semibold text-maroon-900">
+                {b.pandit.user?.name} — Phone: +91 {b.pandit.user?.phone || '9100000001'}
+              </p>
+            ) : (
+              <p className="mt-1 text-xs font-semibold text-red-700">Pending Purohit Assignment</p>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
@@ -162,14 +149,14 @@ function BookingModal({ id, onClose, onChanged }) {
   };
 
   return (
-    <Modal title="Booking Operations & Dispatch" onClose={onClose} wide>
+    <Modal title="CRM Booking Details & Operations" onClose={onClose} wide>
       {loading && !b && <Loader />}
       {error && !b && <ErrorState message={error} onRetry={reload} />}
       {b && (
         <div className="space-y-4 text-sm">
           {act.error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-red-700">{act.error}</p>}
           <div className="flex items-center gap-2">
-            <b className="font-serif text-lg text-maroon-900">{b.puja?.name}</b>
+            <b className="font-serif text-lg text-maroon-900">{b.serviceTitle || b.puja?.name || 'Vedic Puja Service'}</b>
             <StatusBadge status={b.status} meta={STATUS_META} />
             <span className="ml-auto rounded bg-maroon-900 px-2 py-0.5 font-mono text-xs font-bold text-gold-300">
               #{b.bookingNumber}
@@ -177,17 +164,18 @@ function BookingModal({ id, onClose, onChanged }) {
           </div>
           <div className="grid gap-3 rounded-xl border border-stone-200 bg-stone-50 p-4 sm:grid-cols-2">
             <p>
-              <b>Customer:</b> {b.customer?.name}
+              <b>Customer Name:</b> {b.customerName || b.customer?.name}
               <br />
-              +91 {b.customer?.phone || '9000000001'} · {b.customer?.email}
+              <b>Mobile Number:</b> +91 {b.customerPhone || b.customer?.phone || '9000000001'}
+              {(b.customerEmail || b.customer?.email) ? ` · ${b.customerEmail || b.customer?.email}` : ''}
             </p>
             <p>
-              <b>Muhurtham Slot:</b> {fmtDate(b.date)}
+              <b>Preferred Date &amp; Time:</b> {fmtDate(b.date)}
               <br />
               {b.timeSlot.label} ({b.timeSlot.startTime}–{b.timeSlot.endTime})
             </p>
             <p>
-              <b>Locality / Address:</b> {LOCATION_LABEL[b.locationType]}
+              <b>Venue &amp; Locality:</b> {LOCATION_LABEL[b.locationType]}
               {b.address?.line1 ? (
                 <>
                   <br />
@@ -196,16 +184,11 @@ function BookingModal({ id, onClose, onChanged }) {
               ) : null}
             </p>
             <p>
-              <b>Language / Tier:</b> {b.language} / {b.tierName}
+              <b>Language / Package:</b> {b.language} / {b.tierName}
               <br />
-              <b>Samagri Kit:</b> {b.includeSamagri ? '✓ Doorstep Kit Included' : 'Self-Arranged Checklist'}
+              <b>Samagri Kit Needed:</b> {b.includeSamagri ? '✓ Yes — Doorstep Kit Included' : 'Self-Arranged'}
             </p>
-            <p>
-              <b>Payment:</b> {inr(b.payment.amountPaid)} of {inr(b.pricing.total)} ({b.payment.status.replace('_', ' ')})
-              <br />
-              Commission {inr(b.pricing.commissionAmount)} · Purohit {inr(b.pricing.panditEarning)}
-            </p>
-            <p>
+            <p className="sm:col-span-2">
               <b>Assigned Purohit:</b>{' '}
               {b.pandit ? (
                 `${b.pandit.user?.name} (+91 ${b.pandit.user?.phone || '9100000001'})`
@@ -214,14 +197,18 @@ function BookingModal({ id, onClose, onChanged }) {
               )}
             </p>
           </div>
-          {b.notes && <p><b>Notes:</b> {b.notes}</p>}
-          {b.payment.refundStatus === 'failed' || b.payment.refundStatus === 'manual_required' ? (
-            <p className="rounded-lg bg-amber-50 p-3 text-amber-800">
-              Refund needs manual processing in the Razorpay dashboard.
-            </p>
-          ) : null}
+          {(b.serviceDetails || b.notes) && (
+            <div className="rounded-xl border-2 border-amber-300 bg-amber-50/70 p-3.5">
+              <b className="text-xs uppercase tracking-wider text-maroon-800">
+                Customer’s Detailed Service Explanation:
+              </b>
+              <p className="mt-1 whitespace-pre-wrap text-sm text-maroon-900">
+                {b.serviceDetails || b.notes}
+              </p>
+            </div>
+          )}
 
-          {['confirmed', 'pandit_assigned'].includes(b.status) && (
+          {['pending', 'confirmed', 'pandit_assigned'].includes(b.status) && (
             <div className="rounded-xl border border-amber-300/70 bg-amber-50/50 p-4">
               <b>{b.pandit ? 'Re-assign Purohit' : 'Assign Veda Patasala Purohit'}</b>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -349,11 +336,11 @@ export default function Bookings() {
         <div>
           <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider text-maroon-900">
             <SlidersHorizontal className="h-3 w-3 text-saffron-600" />
-            {selectedHub ? `📍 ${selectedHub} Hub Dispatch` : 'Master Ritual Dispatch Console'}
+            {selectedHub ? `📍 ${selectedHub} Hub CRM` : 'Master CRM Bookings & Inquiries'}
           </span>
-          <h1 className="mt-1 font-serif text-3xl font-bold text-maroon-900">Bookings &amp; Muhurtham Dispatch</h1>
+          <h1 className="mt-1 font-serif text-3xl font-bold text-maroon-900">CRM Bookings &amp; Service Inquiries</h1>
           <p className="text-sm text-stone-600">
-            Monitor Hyderabad locality addresses, Samagri kit packing status, Purohit assignments, and 1-click devotee communications.
+            View collected customer names, mobile numbers, common service details, detailed service explanations, and manage Purohit dispatch.
           </p>
         </div>
       </div>
@@ -364,7 +351,7 @@ export default function Bookings() {
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-stone-400" />
           <input
             className="input pl-9"
-            placeholder="Search booking # (e.g. VP-2026...)"
+            placeholder="Search name, mobile, service or booking #..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -410,64 +397,79 @@ export default function Bookings() {
           <table className="w-full text-left text-sm">
             <thead className="border-b border-stone-200 bg-stone-100/90 text-[11px] font-bold uppercase tracking-wider text-maroon-800">
               <tr>
-                <th className="p-3.5">Booking &amp; Ritual</th>
-                <th className="p-3.5">Customer</th>
-                <th className="p-3.5">Locality / Address</th>
-                <th className="p-3.5">Date &amp; Muhurtham</th>
-                <th className="p-3.5">Purohit</th>
-                <th className="p-3.5">Samagri Kit Status</th>
-                <th className="p-3.5">Amount &amp; Status</th>
-                <th className="p-3.5 text-right">Quick 1-Click Actions</th>
+                <th className="p-3.5">Booking &amp; Service Needed</th>
+                <th className="p-3.5">Customer Name &amp; Mobile</th>
+                <th className="p-3.5">Common Details (Venue / Date / Lang)</th>
+                <th className="p-3.5">Service Explanation / Details</th>
+                <th className="p-3.5">Assigned Priest</th>
+                <th className="p-3.5">Status</th>
+                <th className="p-3.5 text-right">CRM Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-200/70">
               {filteredRows.map((b) => {
-                const devoteePhone = b.customer?.phone || '9000000001';
+                const custName = b.customerName || b.customer?.name || 'Devotee';
+                const devoteePhone = b.customerPhone || b.customer?.phone || '9000000001';
+                const serviceName = b.serviceTitle || b.puja?.name || 'Vedic Puja Service';
+                const explanation = b.serviceDetails || b.notes || '—';
                 const waUrl = `https://wa.me/91${devoteePhone.replace(/\D/g, '').slice(-10)}?text=${encodeURIComponent(
-                  `Namaste ${b.customer?.name || 'Devotee'}, VedaPujas Hyderabad Operations Desk here regarding your ${b.puja?.name || 'Puja'} booking (#${b.bookingNumber}) on ${b.date}.`
+                  `Namaste ${custName}, GetPuja.com Hyderabad Desk here regarding your ${serviceName} booking (#${b.bookingNumber}) on ${b.date}.`
                 )}`;
 
                 return (
                   <tr key={b._id} className="align-middle transition hover:bg-amber-50/30">
                     <td className="p-3.5">
-                      <div className="font-serif font-bold text-maroon-900">{b.puja?.name}</div>
-                      <div className="mt-0.5 flex items-center gap-1.5 text-xs text-stone-500">
+                      <div className="font-serif font-bold text-maroon-900">{serviceName}</div>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-stone-500">
                         <span className="rounded bg-stone-100 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-maroon-800">
                           #{b.bookingNumber}
                         </span>
                         <span>· {b.tierName}</span>
-                        <span>· {b.language}</span>
+                        {b.includeSamagri && (
+                          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-800 border border-emerald-200">
+                            + Samagri Kit
+                          </span>
+                        )}
                       </div>
                     </td>
 
                     <td className="p-3.5">
-                      <div className="font-semibold text-maroon-900">{b.customer?.name}</div>
-                      <div className="text-xs text-stone-500">+91 {devoteePhone}</div>
-                    </td>
-
-                    {/* Locality / Address Column */}
-                    <td className="p-3.5 max-w-[210px]">
-                      {b.address?.line1 ? (
-                        <div>
-                          <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/80 bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-maroon-900">
-                            <MapPin className="h-3 w-3 text-saffron-600" />
-                            {b.address.line1.split(',').pop()?.trim() || b.address.city || 'Hyderabad'}
-                          </span>
-                          <div className="mt-1 truncate text-xs text-stone-600" title={`${b.address.line1}, ${b.address.city} ${b.address.pincode}`}>
-                            {b.address.line1}, {b.address.city} {b.address.pincode}
-                          </div>
+                      <div className="font-bold text-maroon-900">{custName}</div>
+                      <a
+                        href={`tel:+91${devoteePhone}`}
+                        className="text-xs font-semibold text-saffron-700 hover:underline"
+                      >
+                        +91 {devoteePhone}
+                      </a>
+                      {(b.customerEmail || b.customer?.email) && (
+                        <div className="text-[11px] text-stone-500 truncate max-w-[160px]">
+                          {b.customerEmail || b.customer?.email}
                         </div>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-semibold text-stone-700">
-                          {LOCATION_LABEL[b.locationType] || 'Hyderabad'}
-                        </span>
                       )}
                     </td>
 
-                    <td className="p-3.5 whitespace-nowrap">
-                      <div className="font-semibold text-maroon-900">{fmtDate(b.date)}</div>
-                      <div className="text-xs text-stone-500">
-                        {b.timeSlot.label} ({b.timeSlot.startTime}–{b.timeSlot.endTime})
+                    {/* Common Details Column */}
+                    <td className="p-3.5 max-w-[220px]">
+                      <div className="font-semibold text-maroon-900 text-xs">
+                        {fmtDate(b.date)} · {b.timeSlot?.label}
+                      </div>
+                      <div className="mt-0.5 text-xs text-stone-600">
+                        <b>Lang:</b> {b.language} · <b>Venue:</b> {LOCATION_LABEL[b.locationType] || b.locationType}
+                      </div>
+                      {b.address?.line1 && (
+                        <div className="mt-0.5 truncate text-[11px] text-stone-500" title={`${b.address.line1}, ${b.address.city}`}>
+                          📍 {b.address.line1}, {b.address.city}
+                        </div>
+                      )}
+                    </td>
+
+                    {/* Detailed Explanation Column */}
+                    <td className="p-3.5 max-w-[260px]">
+                      <div
+                        className="line-clamp-3 rounded-lg border border-amber-200/80 bg-amber-50/50 p-2 text-xs text-maroon-900"
+                        title={explanation}
+                      >
+                        {explanation}
                       </div>
                     </td>
 
@@ -484,29 +486,7 @@ export default function Bookings() {
                       )}
                     </td>
 
-                    {/* Samagri Kit Status Column */}
-                    <td className="p-3.5">
-                      {b.includeSamagri ? (
-                        <div>
-                          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800">
-                            <PackageCheck className="h-3.5 w-3.5 text-emerald-600" /> Kit Packed · Doorstep
-                          </span>
-                          <div className="mt-0.5 text-[11px] text-stone-500">
-                            Add-on: {inr(b.pricing?.samagriPrice || 850)}
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-100 px-2.5 py-0.5 text-[11px] font-medium text-stone-600">
-                          <Package className="h-3 w-3 text-stone-500" /> Self-Arranged
-                        </span>
-                      )}
-                    </td>
-
                     <td className="p-3.5 whitespace-nowrap">
-                      <div className="font-serif text-base font-bold text-maroon-900">{inr(b.pricing.total)}</div>
-                      <div className="mb-1 text-[11px] capitalize text-stone-500">
-                        {b.payment.status.replace('_', ' ')} ({inr(b.payment.amountPaid)})
-                      </div>
                       <StatusBadge status={b.status} meta={STATUS_META} />
                     </td>
 
@@ -517,20 +497,20 @@ export default function Bookings() {
                           type="button"
                           onClick={() => setSlipBooking(b)}
                           className="inline-flex items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-maroon-900 transition hover:border-saffron-500 hover:bg-amber-100"
-                          title="View & Print Auspicious Muhurtham Dispatch Slip"
+                          title="View Full CRM Inquiry & Slip"
                         >
                           <FileText className="h-3.5 w-3.5 text-saffron-600" />
-                          View Muhurtham Slip
+                          View Details
                         </button>
                         <a
                           href={waUrl}
                           target="_blank"
                           rel="noreferrer"
                           className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-xs font-bold text-emerald-800 transition hover:bg-emerald-100"
-                          title={`Contact ${b.customer?.name || 'Devotee'} (+91 ${devoteePhone})`}
+                          title={`Contact ${custName} (+91 ${devoteePhone})`}
                         >
                           <PhoneCall className="h-3.5 w-3.5 text-emerald-600" />
-                          Contact Devotee
+                          WhatsApp
                         </a>
                         <button
                           type="button"

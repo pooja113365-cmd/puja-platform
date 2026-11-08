@@ -1,12 +1,13 @@
 const Booking = require('../models/Booking');
 const Puja = require('../models/Puja');
 const Pandit = require('../models/Pandit');
+const User = require('../models/User');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
 const { env } = require('../config/env');
-const { LANGUAGES } = require('../utils/constants');
+const { LANGUAGES, LOCATION_TYPES } = require('../utils/constants');
 const {
-  assertId, isValidDateString, isValidTime, eventStart, parsePagination, escapeRegex,
+  assertId, isObjectId, isValidDateString, isValidTime, eventStart, parsePagination, escapeRegex,
 } = require('../utils/helpers');
 const { computePricing } = require('../utils/pricing');
 const { isPanditAvailable } = require('../services/matching.service');
@@ -14,7 +15,38 @@ const svc = require('../services/booking.service');
 const { emitBookingUpdate } = require('../services/socket.service');
 
 const STAFF = ['admin', 'ops'];
-const isStaff = (u) => STAFF.includes(u.role);
+const isStaff = (u) => u && STAFF.includes(u.role);
+
+function defaultTomorrowYmd() {
+  const d = new Date(Date.now() + 24 * 3600 * 1000);
+  return d.toISOString().slice(0, 10);
+}
+
+async function resolveOrCreateCustomer(reqUser, { name, phone, email }) {
+  if (reqUser && reqUser._id) return reqUser;
+  const cleanPhone = String(phone || '').replace(/\D/g, '').slice(-10);
+  const validPhone = /^[6-9]\d{9}$/.test(cleanPhone) ? cleanPhone : '9000000099';
+  const cleanEmail =
+    email && /^\S+@\S+\.\S+$/.test(String(email).trim())
+      ? String(email).trim().toLowerCase()
+      : `devotee.${validPhone}.${Date.now()}@getpuja.com`;
+
+  let existing = await User.findOne({ $or: [{ phone: validPhone }, { email: cleanEmail }] });
+  if (existing) return existing;
+
+  try {
+    existing = await User.create({
+      name: String(name || 'Devotee').trim().slice(0, 80) || 'Devotee',
+      email: cleanEmail,
+      phone: validPhone,
+      password: `GetPuja@${validPhone}`,
+      role: 'customer',
+    });
+    return existing;
+  } catch (_e) {
+    return User.findOne({ role: 'customer' });
+  }
+}
 
 const populateBooking = (q) =>
   q
@@ -37,93 +69,123 @@ async function loadAuthorized(req, { forWrite = false } = {}) {
   throw forWrite ? ApiError.forbidden() : ApiError.notFound('Booking not found');
 }
 
-exports.create = asyncHandler(async (req, res) => {
+exports.createInquiry = asyncHandler(async (req, res) => {
   const b = req.body || {};
-  const puja = await Puja.findOne({ _id: assertId(b.pujaId, 'pujaId'), isActive: true }).populate('samagriKit');
-  if (!puja) throw ApiError.notFound('Puja not found');
+  const customerName = String(b.customerName || b.name || req.user?.name || '').trim();
+  const rawPhone = String(b.customerPhone || b.phone || req.user?.phone || '').trim();
+  const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10);
+  const customerEmail = String(b.customerEmail || b.email || req.user?.email || '').trim();
+  const serviceDetails = String(b.serviceDetails || b.notes || '').trim();
 
-  const tier = b.tierName
-    ? puja.priceTiers.find((t) => t.name === b.tierName)
-    : puja.priceTiers.length === 1 ? puja.priceTiers[0] : null;
-  if (!tier) throw ApiError.badRequest('Select a valid price tier');
-
-  if (!isValidDateString(b.date)) throw ApiError.badRequest('date must be YYYY-MM-DD');
-  const slot = b.timeSlot || {};
-  if (!slot.label || !isValidTime(slot.startTime) || !isValidTime(slot.endTime) || slot.startTime >= slot.endTime) {
-    throw ApiError.badRequest('Select a valid time slot / muhurtham');
+  if (!customerName || customerName.length < 2) {
+    throw ApiError.badRequest('Please enter your full name');
   }
-  if (eventStart(b.date, slot.startTime) - Date.now() < 2 * 36e5) {
-    throw ApiError.badRequest('Bookings must be made at least 2 hours before the ceremony');
+  if (!cleanPhone || cleanPhone.length < 10) {
+    throw ApiError.badRequest('Please enter a valid 10-digit mobile number');
   }
-  if (!LANGUAGES.includes(b.language)) throw ApiError.badRequest('Select a valid language');
-  if (!puja.locationTypes.includes(b.locationType)) throw ApiError.badRequest('This puja is not available at the selected location type');
-
-  let address;
-  if (b.locationType === 'home' || b.locationType === 'temple') {
-    const a = b.address || {};
-    if (b.locationType === 'home' && (!a.line1 || !a.city || !/^\d{6}$/.test(String(a.pincode || '')))) {
-      throw ApiError.badRequest('Home address requires line1, city and a 6-digit pincode');
-    }
-    if (a.line1 || a.city) {
-      address = {
-        line1: String(a.line1 || '').slice(0, 200), line2: a.line2 ? String(a.line2).slice(0, 200) : undefined,
-        city: String(a.city || '').slice(0, 80), state: a.state ? String(a.state).slice(0, 80) : undefined,
-        pincode: a.pincode ? String(a.pincode) : undefined,
-      };
-    }
+  if (!serviceDetails) {
+    throw ApiError.badRequest('Please describe the puja or service you need');
   }
 
-  const includeSamagri = Boolean(b.includeSamagri);
-  if (includeSamagri) {
-    if (b.locationType === 'online') throw ApiError.badRequest('Samagri kit delivery is not available for online pujas');
-    if (!puja.samagriKit || !puja.samagriKit.isActive) throw ApiError.badRequest('No samagri kit is available for this puja');
+  let puja = null;
+  if (b.pujaId && isObjectId(String(b.pujaId))) {
+    puja = await Puja.findById(b.pujaId).populate('samagriKit');
   }
-
-  const paymentOption = b.paymentOption === 'full' ? 'full' : 'advance';
+  if (!puja && b.serviceTitle) {
+    puja = await Puja.findOne({
+      name: new RegExp(escapeRegex(String(b.serviceTitle).trim().slice(0, 40)), 'i'),
+    }).populate('samagriKit');
+  }
+  if (!puja) {
+    puja = await Puja.findOne({ isActive: true }).populate('samagriKit');
+  }
 
   let panditId;
-  if (b.panditId) {
-    const pandit = await Pandit.findOne({ _id: assertId(b.panditId, 'panditId'), 'kyc.status': 'approved', isActive: true });
-    if (!pandit) throw ApiError.notFound('Purohit not found');
-    if (!pandit.specializations.includes(puja.category)) throw ApiError.badRequest('This purohit does not perform the selected puja');
-    if (!pandit.languages.includes(b.language)) throw ApiError.badRequest('This purohit does not speak the selected language');
-    if (!(await isPanditAvailable(pandit, b.date, slot.startTime, slot.endTime))) {
-      throw ApiError.conflict('This purohit is not available for the selected date and slot');
-    }
-    panditId = pandit._id;
+  if (b.panditId && isObjectId(String(b.panditId))) {
+    const p = await Pandit.findById(b.panditId);
+    if (p) panditId = p._id;
   }
 
+  const customerDoc = await resolveOrCreateCustomer(req.user, {
+    name: customerName,
+    phone: cleanPhone,
+    email: customerEmail,
+  });
+
+  const date = isValidDateString(b.date) ? b.date : defaultTomorrowYmd();
+  const slot = b.timeSlot && b.timeSlot.startTime && b.timeSlot.endTime
+    ? {
+        label: String(b.timeSlot.label || 'Preferred Slot').slice(0, 80),
+        startTime: b.timeSlot.startTime,
+        endTime: b.timeSlot.endTime,
+      }
+    : {
+        label: String(b.preferredTime || 'Morning Shubh Muhurtham').slice(0, 80),
+        startTime: '08:00',
+        endTime: '10:00',
+      };
+
+  const language = LANGUAGES.includes(b.language) ? b.language : 'Telugu';
+  const locationType = LOCATION_TYPES.includes(b.locationType) ? b.locationType : 'home';
+  const tierName = String(b.tierName || puja?.priceTiers?.[0]?.name || 'Standard').slice(0, 80);
+  const serviceTitle = String(b.serviceTitle || puja?.name || 'Custom Puja Service').trim().slice(0, 200);
+  const includeSamagri = Boolean(b.includeSamagri);
+
+  const addrInput = b.address || {};
+  const address = {
+    line1: String(addrInput.line1 || b.area || 'Hyderabad').slice(0, 200),
+    line2: addrInput.line2 ? String(addrInput.line2).slice(0, 200) : undefined,
+    city: String(addrInput.city || 'Hyderabad').slice(0, 80),
+    state: String(addrInput.state || 'Telangana').slice(0, 80),
+    pincode: String(addrInput.pincode || '500081').slice(0, 10),
+  };
+
   const pricing = computePricing({
-    tierPrice: tier.price,
-    samagriPrice: puja.samagriKit?.price,
+    tierPrice: 0,
+    samagriPrice: 0,
     includeSamagri,
-    paymentOption,
+    paymentOption: 'advance',
     commissionRate: env.commissionRate,
     advancePercent: env.advancePercent,
   });
 
   const booking = await Booking.create({
     bookingNumber: svc.generateBookingNumber(),
-    customer: req.user._id,
-    puja: puja._id,
+    customer: customerDoc?._id,
+    customerName,
+    customerPhone: cleanPhone,
+    customerEmail: customerEmail || undefined,
+    serviceTitle,
+    serviceDetails: serviceDetails.slice(0, 2000),
+    puja: puja?._id,
     pandit: panditId,
-    tierName: tier.name,
-    date: b.date,
-    timeSlot: { label: String(slot.label).slice(0, 80), startTime: slot.startTime, endTime: slot.endTime },
-    language: b.language,
-    locationType: b.locationType,
+    tierName,
+    date,
+    timeSlot: slot,
+    language,
+    locationType,
     address,
     includeSamagri,
-    samagriKit: includeSamagri ? puja.samagriKit._id : undefined,
-    notes: b.notes ? String(b.notes).slice(0, 500) : undefined,
-    paymentOption,
+    samagriKit: includeSamagri && puja?.samagriKit ? puja.samagriKit._id : undefined,
+    notes: serviceDetails.slice(0, 2000),
+    paymentOption: 'advance',
     pricing,
-    statusHistory: [{ status: 'pending', by: req.user._id, note: 'Booking created' }],
+    status: 'pending',
+    statusHistory: [
+      {
+        status: 'pending',
+        by: customerDoc?._id,
+        note: `Service inquiry submitted by ${customerName} (${cleanPhone})`,
+      },
+    ],
   });
 
   await emitBookingUpdate(booking);
-  res.status(201).json({ success: true, data: await populateBooking(Booking.findById(booking._id)) });
+  const populated = await populateBooking(Booking.findById(booking._id));
+  res.status(201).json({ success: true, data: populated });
 });
+
+exports.create = exports.createInquiry;
 
 exports.list = asyncHandler(async (req, res) => {
   const { status, date, from, to, search, pandit: panditQ, payout } = req.query;
@@ -149,7 +211,17 @@ exports.list = asyncHandler(async (req, res) => {
     if ((from && !isValidDateString(from)) || (to && !isValidDateString(to))) throw ApiError.badRequest('from/to must be YYYY-MM-DD');
     filter.date = { ...(from ? { $gte: from } : {}), ...(to ? { $lte: to } : {}) };
   }
-  if (search) filter.bookingNumber = new RegExp(escapeRegex(String(search).slice(0, 30)), 'i');
+  if (search) {
+    const rx = new RegExp(escapeRegex(String(search).slice(0, 50)), 'i');
+    filter.$or = [
+      { bookingNumber: rx },
+      { customerName: rx },
+      { customerPhone: rx },
+      { serviceTitle: rx },
+      { serviceDetails: rx },
+      { notes: rx },
+    ];
+  }
 
   const [items, total] = await Promise.all([
     populateBooking(Booking.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit)),
@@ -178,9 +250,6 @@ exports.updateStatus = asyncHandler(async (req, res) => {
   if (user.role === 'pandit' && !['in_progress', 'completed'].includes(status)) {
     throw ApiError.forbidden('Purohits can only start or complete assigned bookings');
   }
-  if (['in_progress', 'completed'].includes(status) && booking.payment.amountPaid <= 0 && !isStaff(user)) {
-    throw ApiError.badRequest('Booking has not been paid for');
-  }
 
   if (status === 'cancelled') {
     if (user.role === 'customer' && booking.status === 'in_progress') throw ApiError.badRequest('Cannot cancel a puja in progress');
@@ -202,8 +271,8 @@ exports.updateStatus = asyncHandler(async (req, res) => {
 exports.assign = asyncHandler(async (req, res) => {
   const booking = await Booking.findById(req.params.id);
   if (!booking) throw ApiError.notFound('Booking not found');
-  if (!['confirmed', 'pandit_assigned'].includes(booking.status)) {
-    throw ApiError.badRequest('Only confirmed bookings can be assigned a purohit');
+  if (!['pending', 'confirmed', 'pandit_assigned'].includes(booking.status)) {
+    throw ApiError.badRequest('Only active bookings can be assigned a purohit');
   }
   const pandit = await Pandit.findOne({ _id: assertId(req.body?.panditId, 'panditId'), 'kyc.status': 'approved', isActive: true });
   if (!pandit) throw ApiError.notFound('Purohit not found or not approved');

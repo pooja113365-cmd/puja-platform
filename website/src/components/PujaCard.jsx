@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Clock, MapPin, PackageCheck, ArrowRight } from 'lucide-react';
-import { inr, duration, LOCATION_LABEL } from '../utils/format';
+import { duration, LOCATION_LABEL } from '../utils/format';
 import { getPujaImage } from '../utils/media';
+import { useBookingModal } from '../context/BookingModalContext';
 
 export default function PujaCard({ puja }) {
-  const tiers = Array.isArray(puja?.priceTiers) && puja.priceTiers.length > 0 ? puja.priceTiers : [{ price: 2100 }];
-  const from = Math.min(...tiers.map((t) => Number(t.price) || 2100));
+  const { openBookingModal } = useBookingModal();
   const imgUrl = getPujaImage(puja);
   const hasSamagri = Boolean(puja?.samagriKit);
   const locationTypes = Array.isArray(puja?.locationTypes) ? puja.locationTypes : ['home'];
@@ -19,11 +19,8 @@ export default function PujaCard({ puja }) {
       transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
       className="h-full"
     >
-      <Link
-        to={`/pujas/${puja._id}`}
-        className="card group flex h-full flex-col overflow-hidden border-[#F7B928]/60 hover:-translate-y-1 hover:border-[#F58216] hover:shadow-xl hover:shadow-amber-900/10 transition-all duration-200"
-      >
-        <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#300B32]">
+      <div className="card group flex h-full flex-col overflow-hidden border-[#F7B928]/60 hover:-translate-y-1 hover:border-[#F58216] hover:shadow-xl hover:shadow-amber-900/10 transition-all duration-200">
+        <Link to={`/pujas/${puja._id}`} className="relative aspect-[16/10] w-full overflow-hidden bg-[#300B32] block">
           <img
             src={imgUrl}
             alt={puja.name}
@@ -60,24 +57,30 @@ export default function PujaCard({ puja }) {
               </span>
             </div>
           </div>
-        </div>
+        </Link>
 
         <div className="flex flex-1 flex-col justify-between p-4">
-          <p className="line-clamp-1 text-xs text-[#300B32]/80">
+          <p className="line-clamp-2 text-xs text-[#300B32]/80">
             {puja.description}
           </p>
 
           <div className="mt-3 flex items-center justify-between border-t border-[#F7B928]/35 pt-3">
-            <div>
-              <span className="text-xs text-[#300B32]/70">Starts at </span>
-              <b className="font-serif text-xl font-bold text-[#300B32]">{inr(from)}</b>
-            </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#F7B928] to-[#F58216] px-4 py-1.5 text-xs font-extrabold text-[#300B32] shadow-sm group-hover:brightness-105 transition-all duration-200 active:scale-[0.98]">
-              Book Now <ArrowRight className="h-3.5 w-3.5" />
-            </span>
+            <Link
+              to={`/pujas/${puja._id}`}
+              className="text-xs font-bold text-[#300B32]/80 hover:text-[#F58216] hover:underline"
+            >
+              View Details
+            </Link>
+            <button
+              type="button"
+              onClick={() => openBookingModal({ puja, serviceTitle: puja.name })}
+              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F7B928] to-[#F58216] px-5 py-1.5 text-xs font-extrabold text-[#300B32] shadow-sm hover:brightness-105 transition-all duration-200 active:scale-[0.98]"
+            >
+              Book <ArrowRight className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
-      </Link>
+      </div>
     </motion.div>
   );
 }

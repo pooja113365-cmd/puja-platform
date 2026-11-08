@@ -6,6 +6,19 @@ import useFetch from '../hooks/useFetch';
 import PujaCard from '../components/PujaCard';
 import { PujaGridSkeleton } from '../components/PujaCardSkeleton';
 import { ErrorState } from '../components/States';
+import { useBookingModal } from '../context/BookingModalContext';
+import DiwaliSplashOverlay from '../components/DiwaliSplashOverlay';
+
+const ARCH_CATEGORY_SLIDES = [
+  { title: 'Pujas • Home & Office', img: '/images/hero-puja.jpg' },
+  { title: 'Homams • Havan & Shanti', img: '/images/navagraha.jpg' },
+  { title: 'Puja Items • Samagri Kits', img: '/images/puja-items.jpg' },
+  { title: 'Temple Services • Special Rituals', img: '/images/rudrabhishek.jpg' },
+  { title: 'Satyanarayan Vrat & Katha', img: '/images/satyanarayan.jpg' },
+  { title: 'Griha Pravesh Puja', img: '/images/griha-pravesh.jpg' },
+  { title: 'Astrology • Muhurtham & Dosha', img: '/images/pandit-1.jpg' },
+  { title: 'Festivals • Vrat & Celebrations', img: '/images/vivah.jpg' },
+];
 
 const SEARCH_PHRASES = [
   'Search for Satyanarayan Vrat & Katha...',
@@ -459,11 +472,25 @@ function FeatureCardsGrid({ className = '' }) {
 
 export default function Home() {
   const { data, loading, error, reload } = useFetch('/pujas', { featured: 'true', limit: 6 });
+  const { openBookingModal } = useBookingModal();
   const [searchText, setSearchText] = useState('');
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [typedPlaceholder, setTypedPlaceholder] = useState('');
   const [isDeletingPlaceholder, setIsDeletingPlaceholder] = useState(false);
+  const [archSlide, setArchSlide] = useState(0);
+  const [prevArchSlide, setPrevArchSlide] = useState(0);
   const navigate = useNavigate();
+
+  // Auto-cycle category images left-to-right inside the mobile arch
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setArchSlide((curr) => {
+        setPrevArchSlide(curr);
+        return (curr + 1) % ARCH_CATEGORY_SLIDES.length;
+      });
+    }, 2800);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const currentPhrase = SEARCH_PHRASES[phraseIdx];
@@ -498,6 +525,9 @@ export default function Home() {
 
   return (
     <>
+      {/* Full-Screen Diwali Firework Blasters Splash Overlay (Auto-hides after ~5 seconds) */}
+      <DiwaliSplashOverlay />
+
       {/* Hero Section — Deep Purple #300B32, Primary Gold #F7B928, Secondary Orange #F58216 */}
       <section className="relative flex flex-col justify-between overflow-hidden bg-[#300B32] text-white lg:min-h-[calc(100vh-4rem)] lg:w-full lg:flex-row lg:items-center">
         {/* Warm Ambient Gradient Overlay (Identical rich warm amber-purple glow on Mobile & Desktop) */}
@@ -668,18 +698,33 @@ export default function Home() {
                   </radialGradient>
                 </defs>
 
-                {/* Full Landscape Family & Priest Havan Image Rising From Bottom Inside Wide Arch */}
+                {/* Category Images Sliding Left-to-Right Inside Wide Sacred Temple Arch */}
                 <g clipPath="url(#wideTempleArchClip)">
+                  {prevArchSlide !== archSlide && (
+                    <motion.image
+                      key={`prev-${prevArchSlide}`}
+                      href={ARCH_CATEGORY_SLIDES[prevArchSlide].img}
+                      x="6"
+                      y="6"
+                      width="628"
+                      height="432"
+                      preserveAspectRatio="none"
+                      initial={{ x: 6, opacity: 1 }}
+                      animate={{ x: 634, opacity: 0.4 }}
+                      transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+                    />
+                  )}
                   <motion.image
-                    href="/images/hero-puja.jpg"
+                    key={`curr-${archSlide}`}
+                    href={ARCH_CATEGORY_SLIDES[archSlide].img}
                     x="6"
                     y="6"
                     width="628"
                     height="432"
                     preserveAspectRatio="none"
-                    initial={{ y: 110, opacity: 0, scale: 1.05 }}
-                    animate={{ y: 6, opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.95, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                    initial={{ x: -622, opacity: 0.85 }}
+                    animate={{ x: 6, opacity: 1 }}
+                    transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
                   />
                 </g>
 
@@ -741,6 +786,29 @@ export default function Home() {
                   </text>
                 </g>
               </svg>
+
+              {/* Mobile Category Slide Label & Dots */}
+              <div className="mt-1 flex flex-col items-center gap-1.5 lg:hidden">
+                <span className="rounded-full border border-[#F7B928]/60 bg-[#300B32]/90 px-3 py-0.5 text-[11px] font-bold text-[#F7B928] shadow">
+                  {ARCH_CATEGORY_SLIDES[archSlide].title}
+                </span>
+                <div className="flex items-center gap-1.5">
+                  {ARCH_CATEGORY_SLIDES.map((s, idx) => (
+                    <button
+                      key={s.title}
+                      type="button"
+                      aria-label={`Show ${s.title}`}
+                      onClick={() => {
+                        setPrevArchSlide(archSlide);
+                        setArchSlide(idx);
+                      }}
+                      className={`h-1.5 rounded-full transition-all ${
+                        idx === archSlide ? 'w-5 bg-[#F7B928]' : 'w-1.5 bg-white/40'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
             </motion.div>
 
             {/* Mobile 3x2 Feature Cards Placed Directly Below the Arch */}
@@ -812,7 +880,7 @@ export default function Home() {
               Popular Pujas &amp; Homams
             </h2>
             <p className="text-xs text-[#300B32]/80">
-              Select a Puja to view package price, Samagri kit &amp; book your priest.
+              Click Book on any Puja to share your details, requirements &amp; schedule your verified priest.
             </p>
           </div>
           <Link to="/pujas" className="btn-outline !py-2 text-xs">
@@ -846,20 +914,20 @@ export default function Home() {
                 <p className="text-xs text-white/90">All Your Spiritual Needs in One Place</p>
               </div>
             </div>
-            <Link
-              to="/pujas?hasSamagri=true"
+            <button
+              type="button"
+              onClick={() => openBookingModal({ serviceTitle: 'Complete Puja Samagri Kit & Spiritual Items', defaultSamagri: true })}
               className="rounded-full bg-gradient-to-r from-[#F7B928] to-[#F58216] px-5 py-2 text-xs font-extrabold text-[#300B32] shadow hover:brightness-105 active:scale-[0.98]"
             >
-              View All Kits <ArrowRight className="inline h-3.5 w-3.5" />
-            </Link>
+              Book Puja Items <ArrowRight className="inline h-3.5 w-3.5" />
+            </button>
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {PUJA_ITEMS_SHOP.map((item) => (
-              <Link
+              <div
                 key={item.name}
-                to={item.to}
-                className="group overflow-hidden rounded-2xl border border-[#F7B928]/55 bg-white text-center text-[#300B32] shadow-md hover:-translate-y-1 hover:shadow-xl transition-all duration-200"
+                className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-[#F7B928]/55 bg-white text-center text-[#300B32] shadow-md hover:-translate-y-1 hover:shadow-xl transition-all duration-200"
               >
                 <div className="relative h-32 w-full overflow-hidden bg-cream-100">
                   <img
@@ -868,17 +936,23 @@ export default function Home() {
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
-                  <span className="absolute right-2 top-2 rounded-full bg-[#300B32]/90 px-2 py-0.5 text-[10px] font-bold text-[#F7B928]">
-                    {item.price}
-                  </span>
                 </div>
-                <div className="p-3">
-                  <div className="font-serif text-base font-bold leading-snug text-[#300B32] group-hover:text-[#F58216]">
-                    {item.name}
+                <div className="flex flex-1 flex-col justify-between p-3">
+                  <div>
+                    <div className="font-serif text-base font-bold leading-snug text-[#300B32] group-hover:text-[#F58216]">
+                      {item.name}
+                    </div>
+                    <div className="mt-0.5 text-[11px] font-medium text-[#300B32]/75">{item.tag}</div>
                   </div>
-                  <div className="mt-0.5 text-[11px] font-medium text-[#300B32]/75">{item.tag}</div>
+                  <button
+                    type="button"
+                    onClick={() => openBookingModal({ serviceTitle: `${item.name} — ${item.tag}`, defaultSamagri: true })}
+                    className="mt-2.5 inline-flex w-full items-center justify-center gap-1 rounded-full bg-gradient-to-r from-[#F7B928] to-[#F58216] px-3 py-1.5 text-xs font-extrabold text-[#300B32] shadow-sm hover:brightness-105"
+                  >
+                    Book <ArrowRight className="h-3 w-3" />
+                  </button>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         </div>

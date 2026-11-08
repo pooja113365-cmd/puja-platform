@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { BadgeCheck, Languages, MapPin, Award } from 'lucide-react';
+import { BadgeCheck, Languages, MapPin, Award, ArrowRight } from 'lucide-react';
 import { Stars } from './States';
-import { inr } from '../utils/format';
 import { getPanditPhoto } from '../utils/media';
+import { useBookingModal } from '../context/BookingModalContext';
 
 export default function PanditCard({ pandit, onSelect, selected }) {
+  const { openBookingModal } = useBookingModal();
   const name = pandit.user?.name || 'Vedic Priest';
   const photo = getPanditPhoto(pandit);
 
@@ -79,10 +80,12 @@ export default function PanditCard({ pandit, onSelect, selected }) {
       </div>
 
       <div className="mt-auto flex items-center justify-between border-t border-gold-300/40 pt-3.5">
-        <div>
-          <span className="text-xs text-maroon-700/75">Dakshina </span>
-          <b className="font-serif text-lg font-bold text-maroon-900">{inr(pandit.pujaCharge)}</b>
-        </div>
+        <Link
+          to={`/purohits/${pandit._id}`}
+          className="text-xs font-bold text-maroon-800 hover:text-saffron-600 hover:underline"
+        >
+          View Profile
+        </Link>
         {onSelect ? (
           <button
             type="button"
@@ -92,9 +95,18 @@ export default function PanditCard({ pandit, onSelect, selected }) {
             {selected ? '✓ Selected' : 'Select Priest'}
           </button>
         ) : (
-          <Link to={`/purohits/${pandit._id}`} className="btn-outline !py-1.5 !px-4 text-xs">
-            View Profile
-          </Link>
+          <button
+            type="button"
+            onClick={() =>
+              openBookingModal({
+                pandit,
+                serviceTitle: `Priest Booking — ${name}`,
+              })
+            }
+            className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#F7B928] to-[#F58216] px-4 py-1.5 text-xs font-extrabold text-[#300B32] shadow-sm hover:brightness-105"
+          >
+            Book <ArrowRight className="h-3.5 w-3.5" />
+          </button>
         )}
       </div>
     </motion.div>

@@ -122,7 +122,9 @@ export default function MyBookings() {
                 >
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="font-serif text-xl font-bold text-maroon-900">{b.puja?.name}</h3>
+                      <h3 className="font-serif text-xl font-bold text-maroon-900">
+                        {b.serviceTitle || b.puja?.name || 'Vedic Puja'}
+                      </h3>
                       <StatusBadge status={b.status} meta={STATUS_META} />
                       <span className="rounded-full bg-cream-100 px-2.5 py-0.5 text-xs font-semibold text-maroon-800">
                         {b.tierName} Package
@@ -138,6 +140,11 @@ export default function MyBookings() {
                         {LOCATION_LABEL[b.locationType]}
                       </span>
                     </p>
+                    {(b.serviceDetails || b.notes) && (
+                      <p className="mt-1 line-clamp-1 text-xs text-maroon-800">
+                        <b>Details:</b> {b.serviceDetails || b.notes}
+                      </p>
+                    )}
                     <p className="mt-1 text-xs font-medium text-maroon-700/75">
                       Booking #{b.bookingNumber}
                       {b.pandit?.user?.name
@@ -146,13 +153,12 @@ export default function MyBookings() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <div className="text-xl font-bold text-maroon-900">{inr(b.pricing.total)}</div>
-                    <div className="text-xs font-semibold capitalize text-emerald-700">
-                      {b.payment.status.replace('_', ' ')} ({inr(b.payment.amountPaid)} paid)
-                    </div>
-                    <span className="mt-1 inline-block text-xs font-bold text-saffron-600">
-                      Open Live Tracker →
+                    <span className="inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-maroon-900">
+                      {b.language}
                     </span>
+                    <div className="mt-1 text-xs font-bold text-saffron-600">
+                      Open Live Tracker →
+                    </div>
                   </div>
                 </Link>
               </motion.li>

@@ -20,7 +20,7 @@ import { useAuth } from '../context/AuthContext';
 
 const NAV = [
   { to: '/', label: 'Ops Overview', icon: LayoutDashboard, end: true },
-  { to: '/bookings', label: 'Bookings Console', icon: ClipboardList },
+  { to: '/bookings', label: 'CRM Bookings', icon: ClipboardList },
   { to: '/pandits', label: 'Pandit KYC Desk', icon: Users },
   { to: '/pujas', label: 'Pujas Catalog', icon: Flame },
   { to: '/samagri', label: 'Samagri Kits', icon: Package },

@@ -70,7 +70,10 @@ async function emitBookingUpdate(booking) {
       paymentStatus: booking.payment?.status,
       updatedAt: new Date().toISOString(),
     };
-    let room = io.to(`booking:${payload.id}`).to(`user:${booking.customer._id || booking.customer}`).to('staff');
+    let room = io.to(`booking:${payload.id}`).to('staff');
+    if (booking.customer) {
+      room = room.to(`user:${booking.customer._id || booking.customer}`);
+    }
     if (payload.pandit) {
       const p = await Pandit.findById(payload.pandit).select('user').lean();
       if (p) room = room.to(`user:${p.user}`);
