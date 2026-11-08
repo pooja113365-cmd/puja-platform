@@ -573,7 +573,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="container-x relative z-10 grid w-full items-center gap-3.5 pt-3.5 pb-2 sm:gap-5 sm:py-8 lg:grid-cols-12 lg:gap-6">
+        <div className="container-x relative z-10 grid w-full items-center gap-4 pt-7 pb-2 sm:gap-5 sm:py-8 lg:grid-cols-12 lg:gap-6">
           {/* Left Column (Heading, Divider, Subtitle, Search Bar + Desktop Feature Cards) */}
           <motion.div
             initial={{ opacity: 0, y: 14 }}

@@ -111,13 +111,13 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#F7B928]/35 bg-[#300B32] shadow-lg backdrop-blur">
-      <div className="container-x flex h-16 items-center justify-between gap-4">
+      <div className="container-x flex h-[68px] items-center justify-between gap-4 py-2">
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group">
             <GetPujaLotusLogo className="h-10 w-10 sm:h-11 sm:w-11" />
             <span className="h-8 w-[1px] shrink-0 bg-[#F7B928]/60" aria-hidden="true" />
-            <div className="flex min-w-0 flex-col justify-center py-0.5">
-              <div className="font-serif text-xl font-bold leading-none tracking-tight text-white sm:text-2xl">
+            <div className="flex min-w-0 flex-col justify-center">
+              <div className="font-serif text-xl font-bold leading-tight tracking-tight text-white sm:text-2xl">
                 Get<span className="text-[#F7B928]">Puja</span>
               </div>
               <div className="mt-0.5">
