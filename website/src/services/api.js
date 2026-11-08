@@ -1,10 +1,13 @@
 import axios from 'axios';
 
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+const PROD_HOST = 'https://puja-backend-o1wr.onrender.com';
+const DEFAULT_HOST = import.meta.env.PROD ? PROD_HOST : 'http://localhost:5000';
+
+export const API_URL = import.meta.env.VITE_API_URL || `${DEFAULT_HOST}/api`;
+export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || DEFAULT_HOST;
 export const TOKEN_KEY = 'puja_token';
 
-const api = axios.create({ baseURL: API_URL, timeout: 20000 });
+const api = axios.create({ baseURL: API_URL, timeout: 45000 });
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem(TOKEN_KEY);

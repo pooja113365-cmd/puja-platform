@@ -32,7 +32,7 @@ async function start() {
   assertEnv();
   const { embedded } = await connectDB();
   await Booking.syncIndexes();
-  if (embedded && ((await User.countDocuments()) === 0 || (await Puja.countDocuments({ image: { $exists: true } })) === 0)) {
+  if ((await User.countDocuments()) === 0 || (await Puja.countDocuments({ image: { $exists: true } })) === 0) {
     console.log('Seeding initial Vedic catalog, scholar portraits & demo accounts...');
     await runSeed({ keepOpen: true });
   }

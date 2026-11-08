@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const defaultHost = Platform.OS === 'android' ? 'http://10.0.2.2:5000' : 'http://localhost:5000';
+const defaultHost = 'https://puja-backend-o1wr.onrender.com';
 export const API_URL = process.env.EXPO_PUBLIC_API_URL || `${defaultHost}/api`;
 export const SOCKET_URL = process.env.EXPO_PUBLIC_SOCKET_URL || defaultHost;
 export const TOKEN_KEY = 'puja_token';

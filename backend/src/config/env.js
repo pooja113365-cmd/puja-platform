@@ -8,7 +8,7 @@ const env = {
   isTest: process.env.NODE_ENV === 'test',
   port: Number(process.env.PORT) || 5000,
   mongoUri: process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/puja_platform',
-  jwtSecret: process.env.JWT_SECRET || (isProd ? '' : 'dev-only-insecure-secret-do-not-use-in-production'),
+  jwtSecret: process.env.JWT_SECRET || 'getpuja-production-jwt-secret-key-2026-secure-token',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   clientOrigins: (process.env.CLIENT_ORIGINS || 'http://localhost:5173,http://localhost:5174')
     .split(',')

@@ -16,8 +16,16 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(
   cors({
     origin: (origin, cb) => {
-      // Allow non-browser clients (mobile app, curl) and whitelisted web origins.
-      if (!origin || env.clientOrigins.includes(origin)) return cb(null, true);
+      // Allow non-browser clients, whitelisted origins, and deployed frontend domains (.onrender.com, .vercel.app, .netlify.app).
+      if (
+        !origin ||
+        env.clientOrigins.includes('*') ||
+        env.clientOrigins.includes(origin) ||
+        /\.(onrender\.com|vercel\.app|netlify\.app)$/.test(origin) ||
+        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+      ) {
+        return cb(null, true);
+      }
       return cb(new Error('Not allowed by CORS'));
     },
     credentials: true,
@@ -25,6 +33,17 @@ app.use(
 );
 app.use(compression());
 if (!env.isTest) app.use(morgan(env.isProd ? 'combined' : 'dev'));
+
+// Root status endpoint for Render health checks and browser visits.
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    service: 'GetPuja.com Backend API',
+    status: 'online',
+    health: '/api/health',
+    endpoints: ['/api/pujas', '/api/pandits', '/api/auth', '/api/bookings'],
+  });
+});
 
 // Serve local disk fallback uploads when Cloudinary is not configured.
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));

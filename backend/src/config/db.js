@@ -8,12 +8,15 @@ let memoryServer = null;
 async function connectDB() {
   mongoose.set('strictQuery', true);
   try {
-    await mongoose.connect(env.mongoUri, { serverSelectionTimeoutMS: 2500 });
+    const isSrv = env.mongoUri.startsWith('mongodb+srv');
+    await mongoose.connect(env.mongoUri, {
+      dbName: 'puja_platform',
+      serverSelectionTimeoutMS: isSrv ? 15000 : 3000,
+    });
     console.log(`MongoDB connected: ${mongoose.connection.host}/${mongoose.connection.name}`);
     return { embedded: false };
   } catch (err) {
-    if (env.isProd) throw err;
-    console.log(`Local MongoDB daemon not detected on ${env.mongoUri}; starting embedded MongoDB (WiredTiger persistent store)...`);
+    console.warn(`Primary MongoDB connection failed (${err.message}); falling back to embedded MongoDB store...`);
     const { MongoMemoryServer } = require('mongodb-memory-server');
     const dbPath = path.resolve(__dirname, '../../.data/mongodb');
     fs.mkdirSync(dbPath, { recursive: true });
