@@ -28,3 +28,56 @@
     transition: background-color 5000s ease-in-out 0s;
   }
 }
+
+@keyframes diyaSwayLeft {
+  0%, 100% { transform: rotate(-4.5deg); }
+  50% { transform: rotate(4.5deg); }
+}
+
+@keyframes diyaSwayRight {
+  0%, 100% { transform: rotate(4deg); }
+  50% { transform: rotate(-4deg); }
+}
+
+@keyframes flameFlicker {
+  0%, 100% { transform: scaleY(1) scaleX(1); opacity: 0.95; }
+  25% { transform: scaleY(1.16) scaleX(0.93); opacity: 1; }
+  50% { transform: scaleY(0.92) scaleX(1.06); opacity: 0.85; }
+  75% { transform: scaleY(1.12) scaleX(0.95); opacity: 1; }
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.65; transform: scale(0.94); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+
+@keyframes mandalaSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-diya-sway-a {
+  transform-origin: 0px 0px;
+  animation: diyaSwayLeft 3.8s ease-in-out infinite;
+}
+
+.animate-diya-sway-b {
+  transform-origin: 0px 0px;
+  animation: diyaSwayRight 3.2s ease-in-out infinite;
+}
+
+.animate-flame-flicker {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: flameFlicker 1.4s ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  transform-box: fill-box;
+  transform-origin: center center;
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+.animate-mandala-spin {
+  animation: mandalaSpin 48s linear infinite;
+}

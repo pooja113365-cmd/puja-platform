@@ -6,7 +6,7 @@ import { errorMessage } from '../services/api';
 
 function CornerMandala({ className = '' }) {
   return (
-    <svg viewBox="0 0 200 200" className={className} fill="none" aria-hidden="true">
+    <svg viewBox="0 0 200 200" className={`${className} animate-mandala-spin`} fill="none" aria-hidden="true">
       <circle cx="100" cy="100" r="92" stroke="#F7B928" strokeWidth="1.2" strokeDasharray="4 4" opacity="0.55" />
       <circle cx="100" cy="100" r="76" stroke="#F58216" strokeWidth="1.5" opacity="0.5" />
       <circle cx="100" cy="100" r="58" stroke="#F7B928" strokeWidth="1.2" opacity="0.6" />
@@ -35,8 +35,8 @@ function HangingDiyaPair({ side = 'left' }) {
   return (
     <svg
       viewBox="0 0 180 260"
-      className={`pointer-events-none absolute top-0 hidden h-56 w-44 select-none sm:block lg:h-64 lg:w-48 ${
-        isLeft ? 'left-6 lg:left-16' : 'right-6 lg:right-16'
+      className={`pointer-events-none absolute top-0 block h-44 w-32 select-none sm:h-56 sm:w-44 lg:h-64 lg:w-48 ${
+        isLeft ? 'left-1 sm:left-6 lg:left-16' : 'right-1 sm:right-6 lg:right-16'
       }`}
       aria-hidden="true"
     >
@@ -53,34 +53,42 @@ function HangingDiyaPair({ side = 'left' }) {
         </linearGradient>
       </defs>
 
-      {/* First Hanging Diya (Longer Chain) */}
+      {/* First Hanging Diya (Longer Chain — Swaying Pendulum) */}
       <g transform={isLeft ? 'translate(45, 0)' : 'translate(115, 0)'}>
-        <line x1="0" y1="0" x2="0" y2="165" stroke="#F7B928" strokeWidth="2" strokeDasharray="4 3" />
-        <circle cx="0" cy="148" r="28" fill={`url(#flameGlow-${side})`} />
-        <path d="M0 128 C-7 140, -8 152, 0 160 C8 152, 7 140, 0 128 Z" fill="#FFA812" />
-        <path d="M0 134 C-4 142, -4 150, 0 157 C4 150, 4 142, 0 134 Z" fill="#FFF9C4" />
-        <path
-          d="M-26 162 Q0 156 26 162 C22 180, 12 188, 0 188 C-12 188, -22 180, -26 162 Z"
-          fill={`url(#brassBowl-${side})`}
-          stroke="#FFE07D"
-          strokeWidth="1"
-        />
-        <ellipse cx="0" cy="190" rx="11" ry="3" fill="#B66B0E" />
+        <g className="animate-diya-sway-a">
+          <line x1="0" y1="0" x2="0" y2="165" stroke="#F7B928" strokeWidth="2" strokeDasharray="4 3" />
+          <circle cx="0" cy="148" r="28" fill={`url(#flameGlow-${side})`} className="animate-glow-pulse" />
+          <g className="animate-flame-flicker">
+            <path d="M0 128 C-7 140, -8 152, 0 160 C8 152, 7 140, 0 128 Z" fill="#FFA812" />
+            <path d="M0 134 C-4 142, -4 150, 0 157 C4 150, 4 142, 0 134 Z" fill="#FFF9C4" />
+          </g>
+          <path
+            d="M-26 162 Q0 156 26 162 C22 180, 12 188, 0 188 C-12 188, -22 180, -26 162 Z"
+            fill={`url(#brassBowl-${side})`}
+            stroke="#FFE07D"
+            strokeWidth="1"
+          />
+          <ellipse cx="0" cy="190" rx="11" ry="3" fill="#B66B0E" />
+        </g>
       </g>
 
-      {/* Second Hanging Diya (Shorter Chain) */}
+      {/* Second Hanging Diya (Shorter Chain — Counter-Swaying Pendulum) */}
       <g transform={isLeft ? 'translate(115, 0)' : 'translate(45, 0)'}>
-        <line x1="0" y1="0" x2="0" y2="120" stroke="#F7B928" strokeWidth="2" strokeDasharray="4 3" />
-        <circle cx="0" cy="104" r="26" fill={`url(#flameGlow-${side})`} />
-        <path d="M0 86 C-6 96, -7 107, 0 115 C7 107, 6 96, 0 86 Z" fill="#FFA812" />
-        <path d="M0 92 C-3.5 99, -3.5 106, 0 112 C3.5 106, 3.5 99, 0 92 Z" fill="#FFF9C4" />
-        <path
-          d="M-24 117 Q0 111 24 117 C20 133, 10 140, 0 140 C-10 140, -20 133, -24 117 Z"
-          fill={`url(#brassBowl-${side})`}
-          stroke="#FFE07D"
-          strokeWidth="1"
-        />
-        <ellipse cx="0" cy="142" rx="10" ry="2.8" fill="#B66B0E" />
+        <g className="animate-diya-sway-b">
+          <line x1="0" y1="0" x2="0" y2="120" stroke="#F7B928" strokeWidth="2" strokeDasharray="4 3" />
+          <circle cx="0" cy="104" r="26" fill={`url(#flameGlow-${side})`} className="animate-glow-pulse" />
+          <g className="animate-flame-flicker">
+            <path d="M0 86 C-6 96, -7 107, 0 115 C7 107, 6 96, 0 86 Z" fill="#FFA812" />
+            <path d="M0 92 C-3.5 99, -3.5 106, 0 112 C3.5 106, 3.5 99, 0 92 Z" fill="#FFF9C4" />
+          </g>
+          <path
+            d="M-24 117 Q0 111 24 117 C20 133, 10 140, 0 140 C-10 140, -20 133, -24 117 Z"
+            fill={`url(#brassBowl-${side})`}
+            stroke="#FFE07D"
+            strokeWidth="1"
+          />
+          <ellipse cx="0" cy="142" rx="10" ry="2.8" fill="#B66B0E" />
+        </g>
       </g>
     </svg>
   );
@@ -112,9 +120,11 @@ function SacredKalashScene() {
 
       {/* Standing Brass Lamp (Left) */}
       <g transform="translate(65, 115)">
-        <circle cx="0" cy="22" r="34" fill="url(#diyaStandGlow)" />
-        <path d="M0 -4 C-8 10, -8 24, 0 34 C8 24, 8 10, 0 -4 Z" fill="#FF9E0D" />
-        <path d="M0 5 C-4 15, -4 24, 0 31 C4 24, 4 15, 0 5 Z" fill="#FFFBD1" />
+        <circle cx="0" cy="22" r="34" fill="url(#diyaStandGlow)" className="animate-glow-pulse" />
+        <g className="animate-flame-flicker">
+          <path d="M0 -4 C-8 10, -8 24, 0 34 C8 24, 8 10, 0 -4 Z" fill="#FF9E0D" />
+          <path d="M0 5 C-4 15, -4 24, 0 31 C4 24, 4 15, 0 5 Z" fill="#FFFBD1" />
+        </g>
         {/* Bowl */}
         <path d="M-32 35 Q0 28 32 35 C26 52, 14 58, 0 58 C-14 58, -26 52, -32 35 Z" fill="url(#kalashPotGrad)" stroke="#FDE08D" strokeWidth="1" />
         {/* Stem & Base */}
@@ -263,16 +273,16 @@ export default function Login() {
 
   return (
     <div
-      className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12"
+      className="fixed inset-0 flex h-screen w-screen items-center justify-center overflow-hidden px-4"
       style={{
         background:
           'radial-gradient(circle at 50% 55%, rgba(245, 130, 22, 0.25) 0%, transparent 55%), linear-gradient(180deg, #300B32 0%, #3E1038 45%, #5C1A24 80%, #3B0E1D 100%)',
       }}
     >
       {/* Corner Mandalas */}
-      <CornerMandala className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 opacity-45" />
-      <CornerMandala className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 opacity-45" />
-      <CornerMandala className="pointer-events-none absolute -bottom-20 -right-20 h-64 w-64 opacity-45" />
+      <CornerMandala className="pointer-events-none absolute -left-20 -top-20 h-60 w-60 opacity-45" />
+      <CornerMandala className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 opacity-45" />
+      <CornerMandala className="pointer-events-none absolute -bottom-20 -right-20 h-60 w-60 opacity-45" />
 
       {/* Hanging Golden Diyas (Left & Right) */}
       <HangingDiyaPair side="left" />
@@ -284,15 +294,15 @@ export default function Login() {
       {/* Bottom-Right Temple Gopuram Architecture */}
       <TempleGopuramSilhouette />
 
-      {/* Center Ivory Devotional Login Card (#FFF8ED, 24px radius, Gold Border) */}
-      <div className="relative z-10 mt-8 w-full max-w-[420px]">
+      {/* Compact Center Ivory Devotional Login Card (#FFF8ED, 24px radius, Gold Border) */}
+      <div className="relative z-10 mt-5 w-full max-w-[360px]">
         {/* Overlapping Top Circular IBN Logo */}
-        <div className="absolute -top-11 left-1/2 z-20 -translate-x-1/2">
-          <div className="rounded-full bg-gradient-to-b from-[#FFE58F] via-[#F7B928] to-[#C97B10] p-1 shadow-[0_0_28px_rgba(247,185,40,0.65)]">
+        <div className="absolute -top-9 left-1/2 z-20 -translate-x-1/2">
+          <div className="rounded-full bg-gradient-to-b from-[#FFE58F] via-[#F7B928] to-[#C97B10] p-1 shadow-[0_0_24px_rgba(247,185,40,0.65)]">
             <img
               src="/images/ibn-logo.jpg"
               alt="IBN — GetPuja Admin Logo"
-              className="h-20 w-20 rounded-full object-cover ring-2 ring-[#300B32]"
+              className="h-16 w-16 rounded-full object-cover ring-2 ring-[#300B32]"
             />
           </div>
         </div>
@@ -300,7 +310,7 @@ export default function Login() {
         <form
           onSubmit={submit}
           style={{ backgroundColor: '#FFF8ED', borderRadius: '24px' }}
-          className="relative overflow-hidden border-2 border-[#F7B928] px-7 pb-6 pt-12 shadow-[0_24px_65px_rgba(0,0,0,0.55),0_0_30px_rgba(247,185,40,0.2)] sm:px-9"
+          className="relative overflow-hidden border-2 border-[#F7B928] px-6 pb-4 pt-9 shadow-[0_20px_55px_rgba(0,0,0,0.55),0_0_26px_rgba(247,185,40,0.2)] sm:px-7"
         >
           {/* Inner Subtle Gold Frame Border */}
           <div
@@ -310,24 +320,24 @@ export default function Login() {
 
           {/* Brand Header */}
           <div className="flex flex-col items-center text-center">
-            <h1 className="font-serif text-4xl font-bold tracking-tight text-[#300B32]">
+            <h1 className="font-serif text-3xl font-bold tracking-tight text-[#300B32]">
               Get<span className="text-[#F58216]">Puja</span>
             </h1>
 
             {/* Dedicated Admin Panel Badge */}
-            <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[#F7B928]/80 bg-gradient-to-r from-[#FDE7B6] via-[#FAD78C] to-[#FDE7B6] px-4 py-1 text-xs font-bold text-[#4A192C] shadow-sm">
-              <ShieldCheck className="h-3.5 w-3.5 text-[#5B1A32]" />
+            <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-[#F7B928]/80 bg-gradient-to-r from-[#FDE7B6] via-[#FAD78C] to-[#FDE7B6] px-3.5 py-0.5 text-[11px] font-bold text-[#4A192C] shadow-sm">
+              <ShieldCheck className="h-3 w-3 text-[#5B1A32]" />
               <span>Admin Panel</span>
             </div>
           </div>
 
           {/* Divider */}
-          <div className="my-4 border-t border-[#EED9B3]" />
+          <div className="my-3 border-t border-[#EED9B3]" />
 
           {/* Section Heading */}
           <div className="text-center">
-            <h2 className="font-serif text-xl font-bold text-[#300B32]">Admin Login</h2>
-            <p className="mt-0.5 text-xs text-[#5E4352]">
+            <h2 className="font-serif text-lg font-bold text-[#300B32]">Admin Login</h2>
+            <p className="text-[11px] text-[#5E4352]">
               Access and manage the GetPuja platform
             </p>
           </div>
@@ -335,17 +345,17 @@ export default function Login() {
           {error && (
             <p
               role="alert"
-              className="mt-3 rounded-xl border border-red-300 bg-red-50 p-2.5 text-center text-xs font-semibold text-red-700"
+              className="mt-2.5 rounded-xl border border-red-300 bg-red-50 p-2 text-center text-xs font-semibold text-red-700"
             >
               {error}
             </p>
           )}
 
           {/* Form Fields */}
-          <div className="mt-4 space-y-3.5">
+          <div className="mt-3 space-y-2.5">
             <div>
               <label
-                className="mb-1.5 flex items-center gap-1.5 text-xs font-bold text-[#300B32]"
+                className="mb-1 flex items-center gap-1.5 text-xs font-bold text-[#300B32]"
                 htmlFor="email"
               >
                 <Mail className="h-3.5 w-3.5 text-[#5B1A32]" />
@@ -356,7 +366,7 @@ export default function Login() {
                 type="email"
                 required
                 placeholder="admin@getpuja.com"
-                className="w-full rounded-xl border border-[#D5DCE6] bg-[#EEF3FA] px-3.5 py-2.5 text-sm font-medium text-[#23192D] placeholder-[#8A8194] outline-none transition focus:border-[#F58216] focus:bg-white focus:ring-2 focus:ring-[#F7B928]/35"
+                className="w-full rounded-xl border border-[#D5DCE6] bg-[#EEF3FA] px-3.5 py-2 text-sm font-medium text-[#23192D] placeholder-[#8A8194] outline-none transition focus:border-[#F58216] focus:bg-white focus:ring-2 focus:ring-[#F7B928]/35"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
@@ -364,7 +374,7 @@ export default function Login() {
 
             <div>
               <label
-                className="mb-1.5 flex items-center gap-1.5 text-xs font-bold text-[#300B32]"
+                className="mb-1 flex items-center gap-1.5 text-xs font-bold text-[#300B32]"
                 htmlFor="pw"
               >
                 <Lock className="h-3.5 w-3.5 text-[#5B1A32]" />
@@ -376,7 +386,7 @@ export default function Login() {
                   type={showPassword ? 'text' : 'password'}
                   required
                   placeholder="••••••••••"
-                  className="w-full rounded-xl border border-[#D5DCE6] bg-[#EEF3FA] py-2.5 pl-3.5 pr-10 text-sm font-medium text-[#23192D] placeholder-[#8A8194] outline-none transition focus:border-[#F58216] focus:bg-white focus:ring-2 focus:ring-[#F7B928]/35"
+                  className="w-full rounded-xl border border-[#D5DCE6] bg-[#EEF3FA] py-2 pl-3.5 pr-10 text-sm font-medium text-[#23192D] placeholder-[#8A8194] outline-none transition focus:border-[#F58216] focus:bg-white focus:ring-2 focus:ring-[#F7B928]/35"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                 />
@@ -394,7 +404,7 @@ export default function Login() {
 
           {/* Prominent Orange Sign In Button */}
           <button
-            className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F7941D] via-[#F58216] to-[#E2630A] py-2.5 text-sm font-bold text-white shadow-[0_6px_20px_rgba(245,130,22,0.45)] transition hover:brightness-105 active:scale-[0.99] disabled:opacity-50"
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F7941D] via-[#F58216] to-[#E2630A] py-2 text-sm font-bold text-white shadow-[0_6px_20px_rgba(245,130,22,0.45)] transition hover:brightness-105 active:scale-[0.99] disabled:opacity-50"
             disabled={busy}
           >
             <LogIn className="h-4 w-4" />
@@ -402,8 +412,8 @@ export default function Login() {
           </button>
 
           {/* Subtle Lotus Motif at Bottom */}
-          <div className="mt-4 flex justify-center">
-            <svg viewBox="0 0 64 32" className="h-5 w-10 text-[#E5B85B]" fill="none" aria-hidden="true">
+          <div className="mt-2.5 flex justify-center">
+            <svg viewBox="0 0 64 32" className="h-4 w-9 text-[#E5B85B]" fill="none" aria-hidden="true">
               <path
                 d="M32 4 C27 12, 26 20, 32 26 C38 20, 37 12, 32 4 Z"
                 stroke="currentColor"
@@ -435,7 +445,7 @@ export default function Login() {
 
         {/* Bottom Center Gold Sparkle Glow */}
         <div
-          className="pointer-events-none mx-auto -mt-2 h-3 w-36 rounded-full bg-[#F7B928] opacity-70 blur-md"
+          className="pointer-events-none mx-auto -mt-1.5 h-2.5 w-32 rounded-full bg-[#F7B928] opacity-70 blur-md"
           aria-hidden="true"
         />
       </div>
