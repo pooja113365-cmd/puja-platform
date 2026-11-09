@@ -28,6 +28,30 @@ async function expireStaleBookings() {
   }
 }
 
+async function ensurePrimaryAdmin() {
+  try {
+    let admin = await User.findOne({ email: 'admin@getpuja.com' }).select('+password');
+    if (!admin) {
+      await User.create({
+        name: 'GetPuja Admin',
+        email: 'admin@getpuja.com',
+        phone: '9000000009',
+        password: 'Admin@2026',
+        role: 'admin',
+        isActive: true,
+      });
+      console.log('Ensured primary admin user: admin@getpuja.com');
+    } else {
+      admin.role = 'admin';
+      admin.isActive = true;
+      admin.password = 'Admin@2026';
+      await admin.save();
+    }
+  } catch (e) {
+    console.error('Failed to ensure primary admin:', e.message);
+  }
+}
+
 async function start() {
   assertEnv();
   const { embedded } = await connectDB();
@@ -36,6 +60,7 @@ async function start() {
     console.log('Seeding initial Vedic catalog, scholar portraits & demo accounts...');
     await runSeed({ keepOpen: true });
   }
+  await ensurePrimaryAdmin();
   const server = http.createServer(app);
   socket.init(server);
   server.listen(env.port, () => console.log(`Puja API listening on :${env.port} (${env.nodeEnv})`));

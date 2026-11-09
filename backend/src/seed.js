@@ -26,7 +26,8 @@ async function run({ keepOpen = false } = {}) {
   await Promise.all([User, Pandit, Puja, Samagri, Muhurtham, Booking, Review, Dispute].map((m) => m.deleteMany({})));
   await Pandit.syncIndexes();
 
-  const [, , customer] = await User.create([
+  const [, , , customer] = await User.create([
+    { name: 'GetPuja Admin', email: 'admin@getpuja.com', phone: '9000000009', password: 'Admin@2026', role: 'admin' },
     { name: 'Platform Admin', email: 'admin@puja.test', phone: '9000000001', password: PASSWORD, role: 'admin' },
     { name: 'Ops Manager', email: 'ops@puja.test', phone: '9000000002', password: PASSWORD, role: 'ops' },
     {
