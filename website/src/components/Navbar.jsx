@@ -149,7 +149,7 @@ export default function Navbar() {
                 <div className="border-b border-[#F7B928]/20 px-3.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-[#F7B928]">
                   Select Service Location
                 </div>
-                <div className="max-h-72 overflow-y-auto py-1">
+                <div className="no-scrollbar max-h-72 overflow-y-auto py-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                   {HYDERABAD_LOCATIONS.map((loc) => {
                     const active = selectedLoc.label === loc.label;
                     return (

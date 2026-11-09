@@ -16,5 +16,12 @@
   .label { @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-maroon-700; }
   .card { @apply rounded-2xl border border-gold-300/50 bg-white shadow-sm; }
   .container-x { @apply mx-auto w-full max-w-6xl px-4 sm:px-6; }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 

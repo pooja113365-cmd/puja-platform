@@ -170,7 +170,7 @@ export default function BookServiceModal({ initialData = {}, onClose }) {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden text-xs sm:text-sm">
-            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3">
+            <div className="no-scrollbar flex-1 overflow-y-auto p-4 sm:p-5 space-y-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               {err && (
                 <div role="alert" className="rounded-xl border border-red-300 bg-red-50 p-2.5 text-xs font-semibold text-red-700">
                   {err}
