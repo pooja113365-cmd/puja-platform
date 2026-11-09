@@ -19,13 +19,13 @@ import {
 import { useAuth } from '../context/AuthContext';
 
 const NAV = [
-  { to: '/', label: 'Ops Overview', icon: LayoutDashboard, end: true },
-  { to: '/bookings', label: 'CRM Bookings', icon: ClipboardList },
-  { to: '/pandits', label: 'Pandit KYC Desk', icon: Users },
+  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/bookings', label: 'Bookings', icon: ClipboardList },
+  { to: '/pandits', label: 'Pandits', icon: Users },
   { to: '/pujas', label: 'Pujas Catalog', icon: Flame },
   { to: '/samagri', label: 'Samagri Kits', icon: Package },
   { to: '/muhurthams', label: 'Muhurtham Slots', icon: CalendarDays },
-  { to: '/disputes', label: 'Disputes & SLA', icon: MessageSquareWarning },
+  { to: '/disputes', label: 'Disputes', icon: MessageSquareWarning },
   { to: '/revenue', label: 'Revenue & Payouts', icon: IndianRupee, roles: ['admin'] },
 ];
 
@@ -77,9 +77,6 @@ export default function Layout() {
         </div>
       </div>
 
-      <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-widest text-gold-300/75">
-        Operations Modules
-      </div>
       <div className="space-y-1" onClick={() => setOpen(false)}>
         {items.map(({ to, label, icon: Icon, end }) => (
           <NavLink key={to} to={to} end={end} className={link}>
