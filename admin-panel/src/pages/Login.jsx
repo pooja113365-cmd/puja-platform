@@ -29,7 +29,7 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-maroon-800 to-saffron-600 p-4">
-      <form onSubmit={submit} className="card w-full max-w-sm space-y-4 border-gold-300/70 p-8 shadow-xl">
+      <form onSubmit={submit} className="card w-full max-w-sm space-y-4 border-gold-300/70 !bg-[#F8F1E5]/90 p-8 shadow-xl backdrop-blur-md">
         <div className="flex flex-col items-center text-center">
           <GoldenDiyaEmblem className="h-16 w-16" />
           <h1 className="mt-3 text-center font-serif text-2xl font-bold text-maroon-900">
