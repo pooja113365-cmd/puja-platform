@@ -19,4 +19,12 @@
   .label { @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-maroon-700; }
   .card { @apply rounded-2xl border border-stone-200/90 bg-white shadow-sm; }
   .container-x { @apply mx-auto w-full max-w-6xl px-4 sm:px-6; }
+  .login-dark-input:-webkit-autofill,
+  .login-dark-input:-webkit-autofill:hover,
+  .login-dark-input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #ffffff !important;
+    -webkit-box-shadow: 0 0 0px 1000px #48184C inset !important;
+    caret-color: #ffffff;
+    transition: background-color 5000s ease-in-out 0s;
+  }
 }
