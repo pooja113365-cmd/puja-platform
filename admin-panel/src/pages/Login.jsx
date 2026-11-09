@@ -29,9 +29,13 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-maroon-800 to-saffron-600 p-4">
       <form onSubmit={submit} className="card w-full max-w-sm space-y-4 border-gold-300/70 p-8 shadow-xl">
         <div className="flex flex-col items-center text-center">
-          <GoldenDiyaEmblem className="h-14 w-14" />
-          <h1 className="mt-3 text-center text-2xl font-bold text-maroon-900">VedaPujas Ops &amp; Admin</h1>
-          <p className="text-xs font-semibold uppercase tracking-widest text-saffron-600">Hyderabad Command Cockpit</p>
+          <GoldenDiyaEmblem className="h-16 w-16" />
+          <h1 className="mt-3 text-center font-serif text-2xl font-bold text-maroon-900">
+            Get<span className="text-saffron-600">Puja</span>
+          </h1>
+          <p className="mt-0.5 text-xs font-medium tracking-wider text-stone-500">
+            Admin Panel
+          </p>
         </div>
         {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
         <div><label className="label" htmlFor="email">Email</label><input id="email" type="email" required className="input" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
