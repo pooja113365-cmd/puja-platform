@@ -295,14 +295,14 @@ export default function Login() {
       <TempleGopuramSilhouette />
 
       {/* Compact Center Ivory Devotional Login Card (#FFF8ED, 24px radius, Gold Border) */}
-      <div className="relative z-10 mt-5 w-full max-w-[360px]">
+      <div className="relative z-10 mt-3 w-full max-w-[275px] sm:mt-5 sm:max-w-[355px]">
         {/* Overlapping Top Circular IBN Logo */}
-        <div className="absolute -top-9 left-1/2 z-20 -translate-x-1/2">
+        <div className="absolute -top-7 left-1/2 z-20 -translate-x-1/2 sm:-top-9">
           <div className="rounded-full bg-gradient-to-b from-[#FFE58F] via-[#F7B928] to-[#C97B10] p-1 shadow-[0_0_24px_rgba(247,185,40,0.65)]">
             <img
               src="/images/ibn-logo.jpg"
               alt="IBN — GetPuja Admin Logo"
-              className="h-16 w-16 rounded-full object-cover ring-2 ring-[#300B32]"
+              className="h-12 w-12 rounded-full object-cover ring-2 ring-[#300B32] sm:h-16 sm:w-16"
             />
           </div>
         </div>
@@ -310,7 +310,7 @@ export default function Login() {
         <form
           onSubmit={submit}
           style={{ backgroundColor: '#FFF8ED', borderRadius: '24px' }}
-          className="relative overflow-hidden border-2 border-[#F7B928] px-6 pb-4 pt-9 shadow-[0_20px_55px_rgba(0,0,0,0.55),0_0_26px_rgba(247,185,40,0.2)] sm:px-7"
+          className="relative overflow-hidden border-2 border-[#F7B928] px-4 pb-3 pt-7 shadow-[0_20px_55px_rgba(0,0,0,0.55),0_0_26px_rgba(247,185,40,0.2)] sm:px-7 sm:pb-4 sm:pt-9"
         >
           {/* Inner Subtle Gold Frame Border */}
           <div
@@ -320,24 +320,24 @@ export default function Login() {
 
           {/* Brand Header */}
           <div className="flex flex-col items-center text-center">
-            <h1 className="font-serif text-3xl font-bold tracking-tight text-[#300B32]">
+            <h1 className="font-serif text-2xl font-bold tracking-tight text-[#300B32] sm:text-3xl">
               Get<span className="text-[#F58216]">Puja</span>
             </h1>
 
             {/* Dedicated Admin Panel Badge */}
-            <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-[#F7B928]/80 bg-gradient-to-r from-[#FDE7B6] via-[#FAD78C] to-[#FDE7B6] px-3.5 py-0.5 text-[11px] font-bold text-[#4A192C] shadow-sm">
+            <div className="mt-1 inline-flex items-center gap-1 rounded-full border border-[#F7B928]/80 bg-gradient-to-r from-[#FDE7B6] via-[#FAD78C] to-[#FDE7B6] px-2.5 py-0.5 text-[10px] font-bold text-[#4A192C] shadow-sm sm:mt-1.5 sm:gap-1.5 sm:px-3.5 sm:text-[11px]">
               <ShieldCheck className="h-3 w-3 text-[#5B1A32]" />
               <span>Admin Panel</span>
             </div>
           </div>
 
           {/* Divider */}
-          <div className="my-3 border-t border-[#EED9B3]" />
+          <div className="my-2 border-t border-[#EED9B3] sm:my-3" />
 
           {/* Section Heading */}
           <div className="text-center">
-            <h2 className="font-serif text-lg font-bold text-[#300B32]">Admin Login</h2>
-            <p className="text-[11px] text-[#5E4352]">
+            <h2 className="font-serif text-base font-bold text-[#300B32] sm:text-lg">Admin Login</h2>
+            <p className="text-[10px] text-[#5E4352] sm:text-[11px]">
               Access and manage the GetPuja platform
             </p>
           </div>
@@ -345,20 +345,20 @@ export default function Login() {
           {error && (
             <p
               role="alert"
-              className="mt-2.5 rounded-xl border border-red-300 bg-red-50 p-2 text-center text-xs font-semibold text-red-700"
+              className="mt-2 rounded-xl border border-red-300 bg-red-50 p-1.5 text-center text-[11px] font-semibold text-red-700 sm:mt-2.5 sm:p-2 sm:text-xs"
             >
               {error}
             </p>
           )}
 
           {/* Form Fields */}
-          <div className="mt-3 space-y-2.5">
+          <div className="mt-2.5 space-y-2 sm:mt-3 sm:space-y-2.5">
             <div>
               <label
-                className="mb-1 flex items-center gap-1.5 text-xs font-bold text-[#300B32]"
+                className="mb-1 flex items-center gap-1 text-[11px] font-bold text-[#300B32] sm:gap-1.5 sm:text-xs"
                 htmlFor="email"
               >
-                <Mail className="h-3.5 w-3.5 text-[#5B1A32]" />
+                <Mail className="h-3 w-3 text-[#5B1A32] sm:h-3.5 sm:w-3.5" />
                 <span>Email</span>
               </label>
               <input
@@ -366,7 +366,7 @@ export default function Login() {
                 type="email"
                 required
                 placeholder="admin@getpuja.com"
-                className="w-full rounded-xl border border-[#D5DCE6] bg-[#EEF3FA] px-3.5 py-2 text-sm font-medium text-[#23192D] placeholder-[#8A8194] outline-none transition focus:border-[#F58216] focus:bg-white focus:ring-2 focus:ring-[#F7B928]/35"
+                className="w-full rounded-xl border border-[#D5DCE6] bg-[#EEF3FA] px-3 py-1.5 text-xs font-medium text-[#23192D] placeholder-[#8A8194] outline-none transition focus:border-[#F58216] focus:bg-white focus:ring-2 focus:ring-[#F7B928]/35 sm:px-3.5 sm:py-2 sm:text-sm"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
@@ -374,10 +374,10 @@ export default function Login() {
 
             <div>
               <label
-                className="mb-1 flex items-center gap-1.5 text-xs font-bold text-[#300B32]"
+                className="mb-1 flex items-center gap-1 text-[11px] font-bold text-[#300B32] sm:gap-1.5 sm:text-xs"
                 htmlFor="pw"
               >
-                <Lock className="h-3.5 w-3.5 text-[#5B1A32]" />
+                <Lock className="h-3 w-3 text-[#5B1A32] sm:h-3.5 sm:w-3.5" />
                 <span>Password</span>
               </label>
               <div className="relative">
@@ -386,7 +386,7 @@ export default function Login() {
                   type={showPassword ? 'text' : 'password'}
                   required
                   placeholder="••••••••••"
-                  className="w-full rounded-xl border border-[#D5DCE6] bg-[#EEF3FA] py-2 pl-3.5 pr-10 text-sm font-medium text-[#23192D] placeholder-[#8A8194] outline-none transition focus:border-[#F58216] focus:bg-white focus:ring-2 focus:ring-[#F7B928]/35"
+                  className="w-full rounded-xl border border-[#D5DCE6] bg-[#EEF3FA] py-1.5 pl-3 pr-9 text-xs font-medium text-[#23192D] placeholder-[#8A8194] outline-none transition focus:border-[#F58216] focus:bg-white focus:ring-2 focus:ring-[#F7B928]/35 sm:py-2 sm:pl-3.5 sm:pr-10 sm:text-sm"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                 />
@@ -394,9 +394,9 @@ export default function Login() {
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#300B32] transition hover:text-[#F58216]"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#300B32] transition hover:text-[#F58216] sm:pr-3.5"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? <EyeOff className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
                 </button>
               </div>
             </div>
@@ -404,16 +404,16 @@ export default function Login() {
 
           {/* Prominent Orange Sign In Button */}
           <button
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F7941D] via-[#F58216] to-[#E2630A] py-2 text-sm font-bold text-white shadow-[0_6px_20px_rgba(245,130,22,0.45)] transition hover:brightness-105 active:scale-[0.99] disabled:opacity-50"
+            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#F7941D] via-[#F58216] to-[#E2630A] py-2 text-xs font-bold text-white shadow-[0_6px_20px_rgba(245,130,22,0.45)] transition hover:brightness-105 active:scale-[0.99] disabled:opacity-50 sm:mt-4 sm:gap-2 sm:py-2.5 sm:text-sm"
             disabled={busy}
           >
-            <LogIn className="h-4 w-4" />
+            <LogIn className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>{busy ? 'Signing in…' : 'Sign In'}</span>
           </button>
 
           {/* Subtle Lotus Motif at Bottom */}
-          <div className="mt-2.5 flex justify-center">
-            <svg viewBox="0 0 64 32" className="h-4 w-9 text-[#E5B85B]" fill="none" aria-hidden="true">
+          <div className="mt-2 flex justify-center sm:mt-2.5">
+            <svg viewBox="0 0 64 32" className="h-3.5 w-8 text-[#E5B85B] sm:h-4 sm:w-9" fill="none" aria-hidden="true">
               <path
                 d="M32 4 C27 12, 26 20, 32 26 C38 20, 37 12, 32 4 Z"
                 stroke="currentColor"
