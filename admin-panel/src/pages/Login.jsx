@@ -35,9 +35,8 @@ function HangingDiyaPair({ side = 'left' }) {
   return (
     <svg
       viewBox="0 0 180 260"
-      className={`pointer-events-none absolute top-0 block h-44 w-32 select-none sm:h-56 sm:w-44 lg:h-64 lg:w-48 ${
-        isLeft ? 'left-1 sm:left-6 lg:left-16' : 'right-1 sm:right-6 lg:right-16'
-      }`}
+      className={`pointer-events-none absolute top-0 block h-44 w-32 select-none sm:h-56 sm:w-44 lg:h-64 lg:w-48 ${isLeft ? 'left-1 sm:left-6 lg:left-16' : 'right-1 sm:right-6 lg:right-16'
+        }`}
       aria-hidden="true"
     >
       <defs>

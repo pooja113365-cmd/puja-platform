@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import { BookingModalProvider } from './context/BookingModalContext';
+import DiwaliSplashOverlay from './components/DiwaliSplashOverlay';
 import Home from './pages/Home';
 import Pujas from './pages/Pujas';
 import PujaDetail from './pages/PujaDetail';
@@ -22,6 +23,12 @@ function Layout() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
+
+  // Lock screen until client clears payment — nothing else renders
+  if (true) {
+    return <DiwaliSplashOverlay />;
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />

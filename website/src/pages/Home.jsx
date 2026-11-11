@@ -523,9 +523,14 @@ export default function Home() {
     }
   };
 
+  // Show only the server free-tier notice layer on the home page
+  if (true) {
+    return <DiwaliSplashOverlay />;
+  }
+
   return (
     <>
-      {/* Full-Screen Diwali Firework Blasters Splash Overlay (Auto-hides after ~5 seconds) */}
+      {/* Full-Screen Server Free-Tier Notice Overlay */}
       <DiwaliSplashOverlay />
 
       {/* Hero Section — Deep Purple #300B32, Primary Gold #F7B928, Secondary Orange #F58216 */}
