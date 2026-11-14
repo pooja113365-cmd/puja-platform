@@ -523,15 +523,8 @@ export default function Home() {
     }
   };
 
-  // Show only the server free-tier notice layer on the home page
-  if (true) {
-    return <DiwaliSplashOverlay />;
-  }
-
   return (
     <>
-      {/* Full-Screen Server Free-Tier Notice Overlay */}
-      <DiwaliSplashOverlay />
 
       {/* Hero Section — Deep Purple #300B32, Primary Gold #F7B928, Secondary Orange #F58216 */}
       <section className="relative flex flex-col justify-between overflow-hidden bg-[#300B32] text-white lg:min-h-[calc(100vh-4rem)] lg:w-full lg:flex-row lg:items-center">
