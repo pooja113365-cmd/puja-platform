@@ -65,7 +65,9 @@ export default function BookingFlowScreen() {
   );
 
   if (user && user.role !== 'customer') return <EmptyState title="Customer account required" />;
-  if (loading) return <Loader />;
+  if ((loading && !puja) || (opts.loading && !opts.data)) {
+    return <Loader fullScreen label="Loading ritual packages & languages…" />;
+  }
   if (error) return <ErrorState message={error} onRetry={reload} />;
   if (!puja) return null;
 

@@ -48,7 +48,7 @@ export default function BookingDetailScreen() {
     try { await fn(); if (ok) setNotice(ok); reload(); } catch (e) { setActionError(errorMessage(e)); } finally { setBusy(false); }
   };
 
-  if (loading && !b) return <Loader />;
+  if (loading && !b) return <Loader fullScreen label="Loading live booking timeline & purohit details…" />;
   if (error && !b) return <ErrorState message={error} onRetry={reload} />;
   if (!b) return null;
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
-import { Link } from 'expo-router';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import { Link, useRouter } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage } from '../services/api';
 import { Button, ErrorText, Field } from '../components/ui';
@@ -9,6 +9,7 @@ const APP_NAME = process.env.EXPO_PUBLIC_APP_NAME || 'GetPuja';
 
 export default function LoginScreen() {
   const { login } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +52,11 @@ export default function LoginScreen() {
           <Text className="mt-4 text-center text-sm text-maroon-700">
             New here? <Link href="/register" className="font-bold text-saffron-600">Create account</Link>
           </Text>
+          <Pressable onPress={() => router.push('/onboarding')} className="mt-3 items-center">
+            <Text className="text-xs font-semibold text-maroon-700 underline">
+              ✨ View App Onboarding Tour
+            </Text>
+          </Pressable>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

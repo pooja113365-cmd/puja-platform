@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Linking, Pressable, ScrollView, Share, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
 import api, { errorMessage } from '../services/api';
 import useFetch from '../hooks/useFetch';
-import { Button, Card, Chip, ErrorText, Field } from '../components/ui';
+import { Button, Card, Chip, ErrorText, Field, Loader, PaginationBar } from '../components/ui';
 import { COLORS, fmtDate, inr } from '../utils/format';
 import type { Booking, Dispute, ReferralInfo, SavedAddress, TicketCategory, TicketPriority } from '../types';
 
@@ -31,8 +32,17 @@ const TICKET_PRIORITIES: { label: string; value: TicketPriority }[] = [
   { label: 'Urgent', value: 'urgent' },
 ];
 
+const TICKET_STATUS_FILTERS: { label: string; value: string }[] = [
+  { label: 'All', value: '' },
+  { label: 'Open', value: 'open' },
+  { label: 'In Review', value: 'in_review' },
+  { label: 'Resolved', value: 'resolved' },
+  { label: 'Rejected', value: 'rejected' },
+];
+
 export default function ProfileScreen() {
   const { user, updateProfile, refreshUser, logout } = useAuth();
+  const router = useRouter();
   const [prefLang, setPrefLang] = useState('Telugu');
   const [addrForm, setAddrForm] = useState<SavedAddress>({ label: 'Home', line1: '', city: '', state: '', pincode: '' });
   const [addingAddr, setAddingAddr] = useState(false);
@@ -41,8 +51,11 @@ export default function ProfileScreen() {
   const [friendCode, setFriendCode] = useState('');
   const [applyingRef, setApplyingRef] = useState(false);
 
-  // Support ticket / dispute state
+  // Support ticket / dispute state + filter & pagination
   const [disputeOpen, setDisputeOpen] = useState(false);
+  const [ticketStatusFilter, setTicketStatusFilter] = useState('');
+  const [ticketPage, setTicketPage] = useState(1);
+  const [ticketLimit, setTicketLimit] = useState(5);
   const [disputeForm, setDisputeForm] = useState<{
     bookingId: string;
     category: TicketCategory;
@@ -62,7 +75,11 @@ export default function ProfileScreen() {
   const [notice, setNotice] = useState<string | null>(null);
 
   const bookingsQ = useFetch<Booking[]>('/bookings', { limit: 15 });
-  const disputesQ = useFetch<Dispute[]>('/disputes', { limit: 20 });
+  const disputesQ = useFetch<Dispute[]>('/disputes', {
+    status: ticketStatusFilter || undefined,
+    page: ticketPage,
+    limit: ticketLimit,
+  });
   const referralQ = useFetch<ReferralInfo>('/referrals/me');
 
   useEffect(() => {
@@ -72,6 +89,17 @@ export default function ProfileScreen() {
   }, []);
 
   if (!user) return null;
+
+  // Show loading animation until all initial profile APIs finish loading
+  const initialLoading =
+    (bookingsQ.loading && !bookingsQ.data) ||
+    (disputesQ.loading && !disputesQ.data) ||
+    (referralQ.loading && !referralQ.data);
+
+  if (initialLoading) {
+    return <Loader fullScreen label="Loading profile, referral wallet & support tickets…" />;
+  }
+
   const addresses = user.addresses ?? [];
   const refCode = referralQ.data?.referralCode || user.referralCode || 'GPJ108';
   const walletBalance = referralQ.data?.walletBalance ?? user.walletBalance ?? 0;
@@ -180,6 +208,7 @@ export default function ProfileScreen() {
         description: '',
       });
       setDisputeOpen(false);
+      setTicketPage(1);
       disputesQ.reload();
       setNotice('Support ticket submitted to the Admin Panel! Our team will respond shortly.');
     } catch (e) {
@@ -307,7 +336,7 @@ export default function ProfileScreen() {
         ) : null}
       </Card>
 
-      {/* Support Tickets & Disputes (Synced with Admin Panel) */}
+      {/* Support Tickets & Disputes (Synced with Admin Panel, with Filters & Pagination) */}
       <Card className="mb-4 border-gold-400 bg-cream-100">
         <View className="flex-row items-center justify-between">
           <Text className="text-base font-bold text-maroon-800">24×7 Support Tickets &amp; Help Desk</Text>
@@ -412,64 +441,97 @@ export default function ProfileScreen() {
           </View>
           <View className="flex-1">
             <Button
-              title={`📞 Call Helpline`}
+              title="📞 Call Helpline"
               variant="outline"
               onPress={() => Linking.openURL(`tel:+91${SUPPORT_PHONE}`)}
             />
           </View>
         </View>
 
-        {disputesQ.data && disputesQ.data.length > 0 ? (
-          <View className="mt-3 border-t border-gold-300/40 pt-3">
-            <View className="mb-2 flex-row items-center justify-between">
-              <Text className="text-xs font-bold uppercase text-maroon-700">
-                Your Support Tickets ({disputesQ.data.length})
-              </Text>
-              <Pressable onPress={disputesQ.reload}>
-                <Text className="text-xs font-bold text-saffron-600">↻ Refresh</Text>
-              </Pressable>
-            </View>
-            {disputesQ.data.map((d) => (
-              <View key={d._id} className="mb-2 rounded-xl border border-gold-300/60 bg-white p-3">
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-[11px] font-bold text-saffron-700">
-                    {d.ticketNumber || `#${d._id.slice(-6).toUpperCase()}`}
-                    {d.booking?.bookingNumber ? ` · Booking #${d.booking.bookingNumber}` : ' · General'}
-                  </Text>
-                  <View
-                    className={`rounded-full px-2 py-0.5 ${
-                      d.status === 'resolved'
-                        ? 'bg-green-100'
-                        : d.status === 'rejected'
-                        ? 'bg-red-100'
-                        : 'bg-amber-100'
-                    }`}
-                  >
-                    <Text
-                      className={`text-[10px] font-bold uppercase ${
+        {/* Ticket Filters & Paginated List */}
+        <View className="mt-3 border-t border-gold-300/40 pt-3">
+          <View className="mb-2 flex-row items-center justify-between">
+            <Text className="text-xs font-bold uppercase text-maroon-700">
+              Your Support Tickets ({disputesQ.meta?.total ?? disputesQ.data?.length ?? 0})
+            </Text>
+            <Pressable onPress={disputesQ.reload}>
+              <Text className="text-xs font-bold text-saffron-600">↻ Refresh</Text>
+            </Pressable>
+          </View>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2">
+            {TICKET_STATUS_FILTERS.map((sf) => (
+              <Chip
+                key={sf.label}
+                label={sf.label}
+                selected={ticketStatusFilter === sf.value}
+                onPress={() => {
+                  setTicketStatusFilter(sf.value);
+                  setTicketPage(1);
+                }}
+              />
+            ))}
+          </ScrollView>
+
+          {disputesQ.loading ? (
+            <Loader label="Loading support tickets…" />
+          ) : disputesQ.data && disputesQ.data.length > 0 ? (
+            <>
+              {disputesQ.data.map((d, idx) => (
+                <View key={d._id} className="mb-2 rounded-xl border border-gold-300/60 bg-white p-3">
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-[11px] font-bold text-saffron-700">
+                      S.No #{(ticketPage - 1) * ticketLimit + idx + 1} · {d.ticketNumber || `#${d._id.slice(-6).toUpperCase()}`}
+                      {d.booking?.bookingNumber ? ` · Booking #${d.booking.bookingNumber}` : ' · General'}
+                    </Text>
+                    <View
+                      className={`rounded-full px-2 py-0.5 ${
                         d.status === 'resolved'
-                          ? 'text-green-800'
+                          ? 'bg-green-100'
                           : d.status === 'rejected'
-                          ? 'text-red-800'
-                          : 'text-amber-800'
+                          ? 'bg-red-100'
+                          : 'bg-amber-100'
                       }`}
                     >
-                      {d.status.replace('_', ' ')}
-                    </Text>
+                      <Text
+                        className={`text-[10px] font-bold uppercase ${
+                          d.status === 'resolved'
+                            ? 'text-green-800'
+                            : d.status === 'rejected'
+                            ? 'text-red-800'
+                            : 'text-amber-800'
+                        }`}
+                      >
+                        {d.status.replace('_', ' ')}
+                      </Text>
+                    </View>
                   </View>
+                  <Text className="mt-1 text-sm font-bold text-maroon-900">{d.subject}</Text>
+                  <Text className="mt-0.5 text-xs text-maroon-700">{d.description}</Text>
+                  {d.resolution ? (
+                    <View className="mt-2 rounded-lg bg-green-50 p-2">
+                      <Text className="text-[10px] font-bold uppercase text-green-800">Admin Response:</Text>
+                      <Text className="mt-0.5 text-xs text-green-900">{d.resolution}</Text>
+                    </View>
+                  ) : null}
                 </View>
-                <Text className="mt-1 text-sm font-bold text-maroon-900">{d.subject}</Text>
-                <Text className="mt-0.5 text-xs text-maroon-700">{d.description}</Text>
-                {d.resolution ? (
-                  <View className="mt-2 rounded-lg bg-green-50 p-2">
-                    <Text className="text-[10px] font-bold uppercase text-green-800">Admin Response:</Text>
-                    <Text className="mt-0.5 text-xs text-green-900">{d.resolution}</Text>
-                  </View>
-                ) : null}
-              </View>
-            ))}
-          </View>
-        ) : null}
+              ))}
+              <PaginationBar
+                page={ticketPage}
+                limit={ticketLimit}
+                total={disputesQ.meta?.total ?? disputesQ.data.length}
+                pages={disputesQ.meta?.pages}
+                onPageChange={setTicketPage}
+                onLimitChange={(nextLimit) => {
+                  setTicketLimit(nextLimit);
+                  setTicketPage(1);
+                }}
+              />
+            </>
+          ) : (
+            <Text className="py-2 text-xs text-maroon-700">No support tickets found for this filter.</Text>
+          )}
+        </View>
       </Card>
 
       {/* Language Preference */}
@@ -529,6 +591,18 @@ export default function ProfileScreen() {
           </View>
         ) : null}
       </Card>
+
+      <View className="mb-3">
+        <Button
+          title="✨ View App Onboarding Tour"
+          variant="outline"
+          onPress={async () => {
+            await AsyncStorage.removeItem('puja_onboarded_v1');
+            await logout();
+            router.replace('/onboarding');
+          }}
+        />
+      </View>
 
       <Button title="Log Out" variant="danger" onPress={logout} />
       <Text className="mt-4 text-center text-xs text-maroon-700">

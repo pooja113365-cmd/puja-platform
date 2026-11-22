@@ -35,12 +35,22 @@ export default function HomeScreen() {
     bookingsQ.reload();
   };
 
+  // Wait until all initial APIs finish loading before displaying the screen
+  const initialLoading =
+    (pujasQ.loading && !pujasQ.data) ||
+    (panditsQ.loading && !panditsQ.data) ||
+    (bookingsQ.loading && !bookingsQ.data);
+
+  if (initialLoading) {
+    return <Loader fullScreen label="Loading rituals, scholars & bookings…" />;
+  }
+
   const upcoming = bookingsQ.data?.[0];
   const filteredPujas = (pujasQ.data || []).filter((p) => !selectedCat || p.category === selectedCat);
 
   return (
     <ScrollView
-      refreshControl={<RefreshControl refreshing={pujasQ.loading && !!pujasQ.data} onRefresh={onRefresh} />}
+      refreshControl={<RefreshControl refreshing={pujasQ.loading || panditsQ.loading || bookingsQ.loading} onRefresh={onRefresh} />}
       contentContainerStyle={{ paddingBottom: 32 }}
     >
       {/* Hero Banner with Rich Sacred Styling & Clear CTA */}
@@ -151,7 +161,6 @@ export default function HomeScreen() {
           <Text className="text-base font-bold text-maroon-800">Featured Vedic Pandits</Text>
           <Text className="text-[11px] font-bold text-saffron-600">✓ Patasala Certified</Text>
         </View>
-        {panditsQ.loading && !panditsQ.data && <Loader />}
         {panditsQ.error && <ErrorState message={panditsQ.error} onRetry={panditsQ.reload} />}
         <ScrollView
           horizontal
@@ -195,7 +204,6 @@ export default function HomeScreen() {
 
       <View className="px-4 pt-5">
         <Text className="mb-3 text-base font-bold text-maroon-800">Popular Pujas &amp; Rituals</Text>
-        {pujasQ.loading && !pujasQ.data && <Loader />}
         {pujasQ.error && <ErrorState message={pujasQ.error} onRetry={pujasQ.reload} />}
         {filteredPujas.length === 0 && !pujasQ.loading && (
           <EmptyState title="No featured pujas yet" message="Check the full catalog in the Pujas tab." />

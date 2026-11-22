@@ -44,7 +44,7 @@ export default function PujaDetailScreen() {
     }
   }, [puja]);
 
-  if (loading) return <Loader />;
+  if (loading && !puja) return <Loader fullScreen label="Loading ritual significance & packages…" />;
   if (error) return <ErrorState message={error} onRetry={reload} />;
   if (!puja) return null;
 
