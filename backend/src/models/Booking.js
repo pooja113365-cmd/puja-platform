@@ -32,6 +32,7 @@ const bookingSchema = new mongoose.Schema(
     pricing: {
       tierPrice: Number,
       samagriPrice: Number,
+      walletDiscount: { type: Number, default: 0 },
       total: Number,
       advanceAmount: Number,
       commissionRate: Number,

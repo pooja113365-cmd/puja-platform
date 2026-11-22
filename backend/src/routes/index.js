@@ -28,12 +28,14 @@ const authLimiter = rateLimit({
 
 router.get('/health', (_req, res) => res.json({ success: true, status: 'ok', time: new Date().toISOString() }));
 
-// ---- Auth ----
+// ---- Auth & Referrals ----
 router.post('/auth/register', authLimiter, auth.register);
 router.post('/auth/login', authLimiter, auth.login);
 router.get('/auth/me', protect, auth.me);
 router.patch('/auth/me', protect, auth.updateMe);
 router.post('/auth/change-password', protect, auth.changePassword);
+router.get('/referrals/me', protect, auth.getReferralInfo);
+router.post('/referrals/apply', protect, auth.applyReferralCode);
 
 // ---- Pandits ----
 router.get('/pandits/options', pandit.options);
@@ -78,12 +80,15 @@ router.post('/bookings/:id/auto-assign', protect, authorize(...STAFF), validateI
 router.post('/payments/create-order', protect, authorize('customer'), payment.createOrder);
 router.post('/payments/verify', protect, authorize('customer'), payment.verify);
 
-// ---- Reviews & disputes ----
+// ---- Reviews, Support Tickets & Disputes ----
 router.post('/reviews', protect, authorize('customer'), engagement.createReview);
 router.get('/reviews/pandit/:id', validateId(), engagement.panditReviews);
 router.post('/disputes', protect, authorize('customer'), engagement.createDispute);
 router.get('/disputes', protect, engagement.listDisputes);
 router.patch('/disputes/:id', protect, authorize(...STAFF), validateId(), engagement.updateDispute);
+router.post('/support-tickets', protect, authorize('customer'), engagement.createDispute);
+router.get('/support-tickets', protect, engagement.listDisputes);
+router.patch('/support-tickets/:id', protect, authorize(...STAFF), validateId(), engagement.updateDispute);
 
 // ---- Uploads ----
 router.post('/uploads', protect, upload.single('file'), uploads.uploadFile);

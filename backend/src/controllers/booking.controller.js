@@ -185,7 +185,127 @@ exports.createInquiry = asyncHandler(async (req, res) => {
   res.status(201).json({ success: true, data: populated });
 });
 
-exports.create = exports.createInquiry;
+exports.create = asyncHandler(async (req, res) => {
+  const b = req.body || {};
+
+  // If called from the quick service inquiry modal (no pujaId + tier checkout), delegate to createInquiry
+  if (!b.pujaId && b.serviceDetails) {
+    return exports.createInquiry(req, res);
+  }
+
+  let puja = null;
+  if (b.pujaId && isObjectId(String(b.pujaId))) {
+    puja = await Puja.findById(b.pujaId).populate('samagriKit');
+  }
+  if (!puja) {
+    return exports.createInquiry(req, res);
+  }
+
+  const customerDoc = await resolveOrCreateCustomer(req.user, {
+    name: b.customerName || b.name || req.user?.name,
+    phone: b.customerPhone || b.phone || req.user?.phone,
+    email: b.customerEmail || b.email || req.user?.email,
+  });
+
+  const tier =
+    puja.priceTiers.find((t) => t.name === b.tierName) ||
+    puja.priceTiers[0] || { name: 'Standard', price: 2100 };
+
+  const locationType = LOCATION_TYPES.includes(b.locationType) ? b.locationType : puja.locationTypes?.[0] || 'home';
+  const online = locationType === 'online';
+  const includeSamagri = Boolean(b.includeSamagri) && !online && Boolean(puja.samagriKit);
+  const samagriPrice = includeSamagri && puja.samagriKit ? Number(puja.samagriKit.price) || 0 : 0;
+  const paymentOption = b.paymentOption === 'full' ? 'full' : 'advance';
+
+  // Apply referral wallet balance discount if requested by an authenticated customer
+  let walletDiscount = 0;
+  if (b.useWallet && customerDoc && (customerDoc.walletBalance || 0) > 0) {
+    const subtotal = (Number(tier.price) || 0) + samagriPrice;
+    // Allow up to 50% of booking subtotal or available wallet balance
+    walletDiscount = Math.min(customerDoc.walletBalance, Math.round(subtotal * 0.5));
+  }
+
+  const pricing = computePricing({
+    tierPrice: Number(tier.price) || 0,
+    samagriPrice,
+    includeSamagri,
+    walletDiscount,
+    paymentOption,
+    commissionRate: env.commissionRate,
+    advancePercent: env.advancePercent,
+  });
+
+  if (pricing.walletDiscount > 0 && customerDoc) {
+    await User.findByIdAndUpdate(customerDoc._id, {
+      $inc: { walletBalance: -pricing.walletDiscount },
+    });
+  }
+
+  let panditId;
+  if (b.panditId && isObjectId(String(b.panditId))) {
+    const p = await Pandit.findById(b.panditId);
+    if (p) panditId = p._id;
+  }
+
+  const date = isValidDateString(b.date) ? b.date : defaultTomorrowYmd();
+  const slot =
+    b.timeSlot && b.timeSlot.startTime && b.timeSlot.endTime
+      ? {
+          label: String(b.timeSlot.label || 'Shubh Muhurtham').slice(0, 80),
+          startTime: b.timeSlot.startTime,
+          endTime: b.timeSlot.endTime,
+        }
+      : { label: 'Morning Shubh Muhurtham', startTime: '08:00', endTime: '10:00' };
+  const language = LANGUAGES.includes(b.language) ? b.language : 'Telugu';
+  const addrInput = b.address || {};
+  const address = online
+    ? undefined
+    : {
+        line1: String(addrInput.line1 || 'Hyderabad').slice(0, 200),
+        line2: addrInput.line2 ? String(addrInput.line2).slice(0, 200) : undefined,
+        city: String(addrInput.city || 'Hyderabad').slice(0, 80),
+        state: String(addrInput.state || 'Telangana').slice(0, 80),
+        pincode: String(addrInput.pincode || '500081').slice(0, 10),
+      };
+
+  const booking = await Booking.create({
+    bookingNumber: svc.generateBookingNumber(),
+    customer: customerDoc?._id,
+    customerName: customerDoc?.name || b.customerName || 'Devotee',
+    customerPhone: customerDoc?.phone || b.customerPhone || '9000000003',
+    customerEmail: customerDoc?.email || b.customerEmail,
+    serviceTitle: puja.name,
+    serviceDetails: b.notes ? String(b.notes).slice(0, 2000) : `${puja.name} (${tier.name})`,
+    puja: puja._id,
+    pandit: panditId,
+    tierName: tier.name,
+    date,
+    timeSlot: slot,
+    language,
+    locationType,
+    address,
+    includeSamagri,
+    samagriKit: includeSamagri && puja.samagriKit ? puja.samagriKit._id : undefined,
+    notes: b.notes ? String(b.notes).slice(0, 2000) : undefined,
+    paymentOption,
+    pricing,
+    status: 'pending',
+    statusHistory: [
+      {
+        status: 'pending',
+        by: customerDoc?._id,
+        note:
+          pricing.walletDiscount > 0
+            ? `Booking created (₹${pricing.walletDiscount} referral wallet discount applied)`
+            : 'Booking created',
+      },
+    ],
+  });
+
+  await emitBookingUpdate(booking);
+  const populated = await populateBooking(Booking.findById(booking._id));
+  return res.status(201).json({ success: true, data: populated });
+});
 
 exports.list = asyncHandler(async (req, res) => {
   const { status, date, from, to, search, pandit: panditQ, payout } = req.query;

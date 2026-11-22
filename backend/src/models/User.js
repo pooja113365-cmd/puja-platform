@@ -1,6 +1,17 @@
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { ROLES } = require('../utils/constants');
+
+function generateReferralCode(name = '') {
+  const prefix = String(name || 'GPJ')
+    .replace(/[^a-zA-Z]/g, '')
+    .toUpperCase()
+    .slice(0, 3)
+    .padEnd(3, 'G');
+  const rand = crypto.randomBytes(3).toString('hex').toUpperCase().slice(0, 5);
+  return `${prefix}${rand}`;
+}
 
 const addressSchema = new mongoose.Schema(
   {
@@ -23,10 +34,23 @@ const userSchema = new mongoose.Schema(
     role: { type: String, enum: Object.values(ROLES), default: ROLES.CUSTOMER, index: true },
     avatar: { type: String },
     addresses: { type: [addressSchema], default: [] },
+    referralCode: { type: String, unique: true, sparse: true, uppercase: true, trim: true, index: true },
+    referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },
+    referredByCode: { type: String, uppercase: true, trim: true },
+    walletBalance: { type: Number, default: 0, min: 0 },
+    referralCount: { type: Number, default: 0, min: 0 },
+    referralEarnings: { type: Number, default: 0, min: 0 },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
+
+userSchema.pre('validate', function ensureRefCode(next) {
+  if (!this.referralCode) {
+    this.referralCode = generateReferralCode(this.name);
+  }
+  next();
+});
 
 userSchema.pre('save', async function hash(next) {
   if (!this.isModified('password')) return next();
@@ -46,5 +70,6 @@ userSchema.set('toJSON', {
   },
 });
 
-module.exports = mongoose.model('User', userSchema);
+userSchema.statics.generateReferralCode = generateReferralCode;
 
+module.exports = mongoose.model('User', userSchema);

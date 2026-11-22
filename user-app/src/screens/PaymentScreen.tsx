@@ -6,6 +6,9 @@ import api, { errorMessage } from '../services/api';
 import { Button, Card, ErrorState, Loader } from '../components/ui';
 import { inr } from '../utils/format';
 
+const ENV_RAZORPAY_KEY = process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || '';
+const APP_NAME = process.env.EXPO_PUBLIC_APP_NAME || 'GetPuja';
+
 interface OrderData {
   keyId: string;
   orderId: string;
@@ -23,11 +26,12 @@ interface OrderData {
 }
 
 const buildHtml = (o: OrderData) => {
+  const effectiveKey = ENV_RAZORPAY_KEY || o.keyId;
   const options = JSON.stringify({
-    key: o.keyId,
+    key: effectiveKey,
     amount: o.amount,
     currency: o.currency,
-    name: o.name,
+    name: APP_NAME || o.name,
     description: o.description,
     order_id: o.orderId,
     prefill: o.prefill,
@@ -35,7 +39,7 @@ const buildHtml = (o: OrderData) => {
   }).replace(/</g, '\\u003c');
   return `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"></head>
 <body style="background:#FFF8E7;font-family:sans-serif;text-align:center;padding-top:48px;color:#6B1D1D">
-<p>Opening secure payment…</p>
+<p>Opening secure Razorpay checkout…</p>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
   var post = function (o) { window.ReactNativeWebView.postMessage(JSON.stringify(o)); };
@@ -119,7 +123,7 @@ export default function PaymentScreen() {
       </View>
     );
   }
-  if (!order) return <Loader label="Preparing secure payment…" />;
+  if (!order) return <Loader label="Preparing secure Razorpay payment…" />;
 
   // Sandbox/mock fallback UI when Razorpay credentials are not configured in backend/.env
   if (order.mock && order.mockCredentials) {
@@ -131,10 +135,10 @@ export default function PaymentScreen() {
           <Text className="mt-2 text-3xl font-bold text-maroon-900">{inr(order.amount / 100)}</Text>
           <Text className="mt-2 text-xs text-maroon-700">
             Order ID: {order.orderId}{'\n'}
-            HMAC-SHA256 signature verification will be executed against the backend.
+            HMAC-SHA256 signature verification will be executed against the backend. Replace RAZORPAY_KEY_ID &amp; RAZORPAY_KEY_SECRET in .env to switch to live Razorpay Checkout.
           </Text>
           <View className="mt-5">
-            <Button title={`Complete Sandbox Payment (${inr(order.amount / 100)})`} onPress={() => verifyPayment(order.mockCredentials!)} />
+            <Button title={`Complete Payment (${inr(order.amount / 100)})`} onPress={() => verifyPayment(order.mockCredentials!)} />
           </View>
           <View className="mt-3">
             <Button title="Pay Later / View Booking" variant="outline" onPress={goToBooking} />
@@ -154,7 +158,7 @@ export default function PaymentScreen() {
         domStorageEnabled
         setSupportMultipleWindows={false}
         startInLoadingState
-        renderLoading={() => <Loader label="Loading payment…" />}
+        renderLoading={() => <Loader label="Loading Razorpay…" />}
         onError={() => setError('Could not load the payment page. Check your connection.')}
       />
       <Text className="bg-cream-100 p-2 text-center text-xs text-maroon-700">Payments are processed securely by Razorpay.</Text>

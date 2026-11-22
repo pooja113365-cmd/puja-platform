@@ -7,8 +7,9 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (p: { name: string; email: string; phone: string; password: string }) => Promise<void>;
+  register: (p: { name: string; email: string; phone: string; password: string; referralCode?: string }) => Promise<void>;
   updateProfile: (patch: { name?: string; phone?: string; addresses?: SavedAddress[] }) => Promise<void>;
+  refreshUser: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -27,6 +28,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     onUnauthorized(() => { closeSocket(); setUser(null); });
     return () => onUnauthorized(null);
+  }, []);
+
+  const refreshUser = useCallback(async () => {
+    try {
+      const res = await api.get('/auth/me');
+      const u: User = res.data.data.user;
+      if (u.role === 'customer') setUser(u);
+    } catch {
+      // ignore
+    }
   }, []);
 
   useEffect(() => {
@@ -63,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await finish(res.data.data);
   }, [finish]);
 
-  const register = useCallback(async (p: { name: string; email: string; phone: string; password: string }) => {
+  const register = useCallback(async (p: { name: string; email: string; phone: string; password: string; referralCode?: string }) => {
     const res = await api.post('/auth/register', { ...p, role: 'customer' });
     await finish(res.data.data);
   }, [finish]);
@@ -74,8 +85,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, loading, login, register, updateProfile, logout }),
-    [user, loading, login, register, updateProfile, logout]
+    () => ({ user, loading, login, register, updateProfile, refreshUser, logout }),
+    [user, loading, login, register, updateProfile, refreshUser, logout]
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

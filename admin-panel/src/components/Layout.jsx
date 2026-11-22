@@ -25,7 +25,7 @@ const NAV = [
   { to: '/pujas', label: 'Pujas Catalog', icon: Flame },
   { to: '/samagri', label: 'Samagri Kits', icon: Package },
   { to: '/muhurthams', label: 'Muhurtham Slots', icon: CalendarDays },
-  { to: '/disputes', label: 'Disputes', icon: MessageSquareWarning },
+  { to: '/disputes', label: 'Support & Disputes', icon: MessageSquareWarning },
   { to: '/revenue', label: 'Revenue & Payouts', icon: IndianRupee, roles: ['admin'] },
 ];
 

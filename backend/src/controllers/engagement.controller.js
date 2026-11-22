@@ -3,7 +3,10 @@ const Booking = require('../models/Booking');
 const Dispute = require('../models/Dispute');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
-const { assertId, parsePagination, round2 } = require('../utils/helpers');
+const { assertId, isObjectId, parsePagination, round2 } = require('../utils/helpers');
+
+const VALID_CATEGORIES = ['booking_issue', 'payment_refund', 'pandit_feedback', 'referral_wallet', 'general_support'];
+const VALID_PRIORITIES = ['low', 'medium', 'high', 'urgent'];
 
 // ---------------- Reviews ----------------
 exports.createReview = asyncHandler(async (req, res) => {
@@ -17,8 +20,12 @@ exports.createReview = asyncHandler(async (req, res) => {
   if (await Review.exists({ booking: booking._id })) throw ApiError.conflict('You have already reviewed this booking');
 
   const review = await Review.create({
-    booking: booking._id, customer: req.user._id, pandit: booking.pandit, puja: booking.puja,
-    rating: r, comment: comment ? String(comment).slice(0, 1000) : undefined,
+    booking: booking._id,
+    customer: req.user._id,
+    pandit: booking.pandit,
+    puja: booking.puja,
+    rating: r,
+    comment: comment ? String(comment).slice(0, 1000) : undefined,
   });
   booking.reviewed = true;
   await booking.save();
@@ -36,18 +43,46 @@ exports.panditReviews = asyncHandler(async (req, res) => {
   res.json({ success: true, data: items, meta: { page, limit, total, pages: Math.ceil(total / limit) } });
 });
 
-// ---------------- Disputes ----------------
+// ---------------- Support Tickets & Disputes ----------------
 exports.createDispute = asyncHandler(async (req, res) => {
-  const { bookingId, subject, description } = req.body || {};
-  const booking = await Booking.findById(assertId(bookingId, 'bookingId'));
-  if (!booking || String(booking.customer) !== String(req.user._id)) throw ApiError.notFound('Booking not found');
-  if (typeof subject !== 'string' || subject.trim().length < 3) throw ApiError.badRequest('Subject is required');
-  if (typeof description !== 'string' || description.trim().length < 10) throw ApiError.badRequest('Please describe the issue (min 10 characters)');
-  if (await Dispute.exists({ booking: booking._id, status: { $in: ['open', 'in_review'] } })) {
-    throw ApiError.conflict('An open dispute already exists for this booking');
+  const { bookingId, subject, description, category, priority, source } = req.body || {};
+  if (typeof subject !== 'string' || subject.trim().length < 3) throw ApiError.badRequest('Subject is required (min 3 characters)');
+  if (typeof description !== 'string' || description.trim().length < 10) {
+    throw ApiError.badRequest('Please describe your issue (min 10 characters)');
   }
-  const dispute = await Dispute.create({ booking: booking._id, raisedBy: req.user._id, subject, description });
-  res.status(201).json({ success: true, data: dispute });
+
+  let booking = null;
+  if (bookingId && String(bookingId).trim()) {
+    if (!isObjectId(String(bookingId))) throw ApiError.badRequest('Invalid bookingId');
+    booking = await Booking.findById(bookingId);
+    if (!booking || String(booking.customer) !== String(req.user._id)) {
+      throw ApiError.notFound('Booking not found');
+    }
+  }
+
+  const resolvedCategory = VALID_CATEGORIES.includes(category)
+    ? category
+    : booking
+    ? 'booking_issue'
+    : 'general_support';
+  const resolvedPriority = VALID_PRIORITIES.includes(priority) ? priority : 'medium';
+  const resolvedSource = ['mobile_app', 'website', 'admin'].includes(source) ? source : 'mobile_app';
+
+  const dispute = await Dispute.create({
+    booking: booking ? booking._id : undefined,
+    raisedBy: req.user._id,
+    category: resolvedCategory,
+    priority: resolvedPriority,
+    source: resolvedSource,
+    subject: subject.trim(),
+    description: description.trim(),
+  });
+
+  const populated = await Dispute.findById(dispute._id)
+    .populate('raisedBy', 'name email phone referralCode')
+    .populate({ path: 'booking', select: 'bookingNumber date status pricing payment puja', populate: { path: 'puja', select: 'name' } });
+
+  res.status(201).json({ success: true, data: populated });
 });
 
 exports.listDisputes = asyncHandler(async (req, res) => {
@@ -55,9 +90,13 @@ exports.listDisputes = asyncHandler(async (req, res) => {
   const filter = {};
   if (!['admin', 'ops'].includes(req.user.role)) filter.raisedBy = req.user._id;
   if (req.query.status) filter.status = String(req.query.status);
+  if (req.query.category) filter.category = String(req.query.category);
   const [items, total] = await Promise.all([
-    Dispute.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit)
-      .populate('raisedBy', 'name email phone')
+    Dispute.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('raisedBy', 'name email phone referralCode')
       .populate({ path: 'booking', select: 'bookingNumber date status pricing payment puja', populate: { path: 'puja', select: 'name' } }),
     Dispute.countDocuments(filter),
   ]);
@@ -66,17 +105,17 @@ exports.listDisputes = asyncHandler(async (req, res) => {
 
 exports.updateDispute = asyncHandler(async (req, res) => {
   const dispute = await Dispute.findById(req.params.id).populate('booking');
-  if (!dispute) throw ApiError.notFound('Dispute not found');
+  if (!dispute) throw ApiError.notFound('Support ticket / dispute not found');
   const { status, resolution, refundAmount } = req.body || {};
   if (!['in_review', 'resolved', 'rejected'].includes(status)) throw ApiError.badRequest('Invalid status');
-  if (['resolved', 'rejected'].includes(dispute.status)) throw ApiError.badRequest('Dispute is already closed');
+  if (['resolved', 'rejected'].includes(dispute.status)) throw ApiError.badRequest('Ticket is already closed');
   if (['resolved', 'rejected'].includes(status)) {
     if (typeof resolution !== 'string' || resolution.trim().length < 5) throw ApiError.badRequest('Resolution notes are required');
     const refund = round2(Number(refundAmount) || 0);
     const paid = dispute.booking?.payment?.amountPaid || 0;
-    if (refund < 0 || refund > paid) throw ApiError.badRequest('Refund cannot exceed the amount paid');
-    dispute.refundAmount = status === 'resolved' ? refund : 0;
-    dispute.resolution = resolution;
+    if (refund < 0 || (dispute.booking && refund > paid)) throw ApiError.badRequest('Refund cannot exceed the amount paid');
+    dispute.refundAmount = status === 'resolved' && dispute.booking ? refund : 0;
+    dispute.resolution = resolution.trim();
     dispute.resolvedBy = req.user._id;
     dispute.resolvedAt = new Date();
     if (status === 'resolved' && refund > 0 && dispute.booking) {
@@ -94,9 +133,13 @@ exports.updateDispute = asyncHandler(async (req, res) => {
         await bk.save();
       }
     }
+  } else if (typeof resolution === 'string' && resolution.trim()) {
+    dispute.resolution = resolution.trim();
   }
   dispute.status = status;
   await dispute.save();
-  res.json({ success: true, data: dispute });
+  const populated = await Dispute.findById(dispute._id)
+    .populate('raisedBy', 'name email phone referralCode')
+    .populate({ path: 'booking', select: 'bookingNumber date status pricing payment puja', populate: { path: 'puja', select: 'name' } });
+  res.json({ success: true, data: populated });
 });
-

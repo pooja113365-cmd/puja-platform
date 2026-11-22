@@ -9,6 +9,8 @@ import { Button, Card, EmptyState, ErrorState, Loader, StatusBadge } from '../co
 import { COLORS, fmtDate, getPanditPhotoUrl, inr } from '../utils/format';
 import type { Booking, Pandit, Puja } from '../types';
 
+const APP_NAME = process.env.EXPO_PUBLIC_APP_NAME || 'GetPuja';
+
 const QUICK_CATEGORIES: { label: string; value: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { label: 'All Rituals', value: '', icon: 'sparkles-outline' },
   { label: 'Griha Pravesh', value: 'Griha Pravesh', icon: 'home-outline' },
@@ -41,11 +43,11 @@ export default function HomeScreen() {
       refreshControl={<RefreshControl refreshing={pujasQ.loading && !!pujasQ.data} onRefresh={onRefresh} />}
       contentContainerStyle={{ paddingBottom: 32 }}
     >
-      {/* Upgraded Hero Banner with Rich Sacred Styling & Clear CTA */}
+      {/* Hero Banner with Rich Sacred Styling & Clear CTA */}
       <View className="mx-4 mt-4 overflow-hidden rounded-3xl border border-gold-400/60 bg-maroon-800 p-5 shadow-md">
         <View className="self-start rounded-full border border-gold-400/70 bg-maroon-900 px-3 py-1">
           <Text className="text-[10px] font-bold uppercase tracking-widest text-gold-300">
-            🪔 VedaPujas · Hyderabad #1 Vedic Platform
+            🪔 {APP_NAME} · Hyderabad #1 Vedic Platform
           </Text>
         </View>
         <Text className="mt-2.5 text-2xl font-bold leading-7 text-cream-100">
@@ -57,6 +59,30 @@ export default function HomeScreen() {
         <View className="mt-4">
           <Button title="Explore Puja Catalog →" onPress={() => router.push('/pujas')} />
         </View>
+      </View>
+
+      {/* Refer & Earn Banner + Quick Support CTA */}
+      <View className="mx-4 mt-3.5 flex-row gap-2.5">
+        <Pressable
+          onPress={() => router.push('/profile')}
+          className="flex-1 rounded-2xl border border-gold-400 bg-cream-100 p-3"
+        >
+          <Text className="text-[10px] font-bold uppercase tracking-wider text-saffron-600">🎁 Refer &amp; Earn ₹100</Text>
+          <Text className="mt-0.5 text-xs font-bold text-maroon-900">
+            Code: {user?.referralCode || 'GPJ108'}
+          </Text>
+          <Text className="mt-0.5 text-[11px] text-maroon-700">
+            Wallet: {inr(user?.walletBalance || 0)} →
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => router.push('/profile')}
+          className="flex-1 rounded-2xl border border-gold-300 bg-white p-3"
+        >
+          <Text className="text-[10px] font-bold uppercase tracking-wider text-saffron-600">🎫 24×7 Support Desk</Text>
+          <Text className="mt-0.5 text-xs font-bold text-maroon-900">Raise a Ticket</Text>
+          <Text className="mt-0.5 text-[11px] text-maroon-700">Direct to Admin Panel →</Text>
+        </Pressable>
       </View>
 
       {upcoming ? (

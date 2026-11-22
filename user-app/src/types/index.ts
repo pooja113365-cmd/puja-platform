@@ -17,6 +17,22 @@ export interface User {
   phone: string;
   role: Role;
   addresses?: SavedAddress[];
+  referralCode?: string;
+  referredByCode?: string;
+  walletBalance?: number;
+  referralCount?: number;
+  referralEarnings?: number;
+}
+
+export interface ReferralInfo {
+  referralCode: string;
+  walletBalance: number;
+  referralCount: number;
+  referralEarnings: number;
+  referredByCode: string | null;
+  referrerReward: number;
+  refereeReward: number;
+  referredUsers: { _id: string; name: string; createdAt: string }[];
 }
 
 export interface PriceTier { name: string; price: number; description?: string }
@@ -75,15 +91,34 @@ export interface Booking {
   meetingLink?: string;
   includeSamagri: boolean;
   paymentOption: 'advance' | 'full';
-  pricing: { total: number; advanceAmount: number };
+  pricing: {
+    tierPrice?: number;
+    samagriPrice?: number;
+    walletDiscount?: number;
+    total: number;
+    advanceAmount: number;
+  };
   payment: { status: string; amountPaid: number; refundedAmount?: number };
   status: BookingStatus;
   reviewed?: boolean;
   statusHistory: { status: BookingStatus; at: string; note?: string }[];
 }
 
+export type TicketCategory =
+  | 'booking_issue'
+  | 'payment_refund'
+  | 'pandit_feedback'
+  | 'referral_wallet'
+  | 'general_support';
+
+export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
+
 export interface Dispute {
   _id: string;
+  ticketNumber?: string;
+  category?: TicketCategory;
+  priority?: TicketPriority;
+  source?: 'mobile_app' | 'website' | 'admin';
   booking?: { _id: string; bookingNumber: string; puja?: { name: string } };
   subject: string;
   description: string;

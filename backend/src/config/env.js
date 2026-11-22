@@ -30,6 +30,10 @@ const env = {
   })(),
   commissionRate: Math.min(Math.max(Number(process.env.COMMISSION_RATE ?? 0.2), 0), 0.9),
   advancePercent: Math.min(Math.max(Number(process.env.ADVANCE_PERCENT ?? 30), 1), 100),
+  referral: {
+    referrerReward: Math.max(Number(process.env.REFERRAL_REWARD_REFERRER ?? 100), 0),
+    refereeReward: Math.max(Number(process.env.REFERRAL_REWARD_REFEREE ?? 50), 0),
+  },
 };
 
 function assertEnv() {

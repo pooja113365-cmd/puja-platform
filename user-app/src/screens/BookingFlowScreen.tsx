@@ -21,7 +21,7 @@ const nextDays = (n: number) => Array.from({ length: n }, (_, i) => {
 export default function BookingFlowScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { data: puja, loading, error, reload } = useFetch<Puja>(id ? `/pujas/${id}` : null);
   const opts = useFetch<{ languages: string[] }>('/pandits/options');
 
@@ -36,6 +36,7 @@ export default function BookingFlowScreen() {
   const [panditMode, setPanditMode] = useState<'auto' | 'choose'>('auto');
   const [panditId, setPanditId] = useState('');
   const [paymentOption, setPaymentOption] = useState<'advance' | 'full'>('advance');
+  const [useWallet, setUseWallet] = useState(true);
   const [notes, setNotes] = useState('');
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -71,7 +72,11 @@ export default function BookingFlowScreen() {
   const tier = puja.priceTiers.find((t) => t.name === tierName);
   const online = locationType === 'online';
   const kitOn = includeSamagri && !online && !!puja.samagriKit;
-  const total = (tier?.price ?? 0) + (kitOn ? puja.samagriKit!.price : 0);
+  const subtotal = (tier?.price ?? 0) + (kitOn ? puja.samagriKit!.price : 0);
+  const availableWallet = user?.walletBalance ?? 0;
+  const maxUsableWallet = Math.min(availableWallet, Math.round(subtotal * 0.5));
+  const walletDiscount = useWallet && maxUsableWallet > 0 ? maxUsableWallet : 0;
+  const total = Math.max(subtotal - walletDiscount, 0);
   const payNow = paymentOption === 'full' ? total : Math.round(total * ADVANCE_PERCENT) / 100;
   const needsAddress = locationType === 'home';
   const addrOk = !needsAddress || (address.line1.trim() && address.city.trim() && /^\d{6}$/.test(address.pincode));
@@ -79,17 +84,24 @@ export default function BookingFlowScreen() {
 
   const submit = async () => {
     if (!slot || !locationType) return;
-    setBusy(true); setSubmitError(null);
+    setBusy(true);
+    setSubmitError(null);
     try {
       const res = await api.post('/bookings', {
-        pujaId: puja._id, tierName, date,
+        pujaId: puja._id,
+        tierName,
+        date,
         timeSlot: { label: slot.label, startTime: slot.startTime, endTime: slot.endTime },
-        language, locationType,
+        language,
+        locationType,
         address: online ? undefined : address,
-        includeSamagri: kitOn, paymentOption,
+        includeSamagri: kitOn,
+        paymentOption,
+        useWallet: walletDiscount > 0,
         panditId: panditMode === 'choose' ? panditId : undefined,
         notes: notes || undefined,
       });
+      if (walletDiscount > 0) await refreshUser();
       router.replace(`/payment?bookingId=${res.data.data._id}`);
     } catch (e) {
       setSubmitError(errorMessage(e));
@@ -237,6 +249,21 @@ export default function BookingFlowScreen() {
               <Text className="text-sm text-maroon-700">Purohit: {panditMode === 'auto' ? 'Auto-matched after payment' : (panditsQ.data?.find((p) => p._id === panditId)?.user?.name ?? 'Selected')}</Text>
             </Card>
             <Field label="Notes for the purohit (optional)" value={notes} onChangeText={setNotes} multiline maxLength={500} />
+
+            {availableWallet > 0 ? (
+              <Card className="mb-4 flex-row items-center border-gold-400 bg-cream-100">
+                <View className="mr-3 flex-1">
+                  <Text className="text-sm font-bold text-maroon-900">
+                    🎁 Use Referral Wallet Balance ({inr(availableWallet)} available)
+                  </Text>
+                  <Text className="text-xs text-maroon-700">
+                    Save {inr(maxUsableWallet)} on this booking from your referral rewards
+                  </Text>
+                </View>
+                <Switch value={useWallet} onValueChange={setUseWallet} trackColor={{ true: '#F27F0C' }} />
+              </Card>
+            ) : null}
+
             <Text className="mb-2 text-xs font-semibold uppercase text-maroon-700">Payment option</Text>
             <View className="mb-3 flex-row flex-wrap">
               <Chip label={`${ADVANCE_PERCENT}% advance now`} selected={paymentOption === 'advance'} onPress={() => setPaymentOption('advance')} />
@@ -245,8 +272,14 @@ export default function BookingFlowScreen() {
             <Card>
               <View className="flex-row justify-between"><Text className="text-sm text-maroon-800">{tierName}</Text><Text className="text-sm text-maroon-800">{inr(tier?.price)}</Text></View>
               {kitOn ? <View className="flex-row justify-between"><Text className="text-sm text-maroon-800">Samagri kit</Text><Text className="text-sm text-maroon-800">{inr(puja.samagriKit!.price)}</Text></View> : null}
+              {walletDiscount > 0 ? (
+                <View className="mt-1 flex-row justify-between">
+                  <Text className="text-sm font-semibold text-green-700">Referral Wallet Discount</Text>
+                  <Text className="text-sm font-bold text-green-700">- {inr(walletDiscount)}</Text>
+                </View>
+              ) : null}
               <View className="mt-2 flex-row justify-between border-t border-gold-300/50 pt-2"><Text className="text-base font-bold text-maroon-800">Total</Text><Text className="text-base font-bold text-maroon-800">{inr(total)}</Text></View>
-              <View className="flex-row justify-between"><Text className="text-sm text-maroon-700">Payable now</Text><Text className="text-sm text-maroon-700">{inr(payNow)}</Text></View>
+              <View className="flex-row justify-between"><Text className="text-sm text-maroon-700">Payable now via Razorpay</Text><Text className="text-sm font-bold text-saffron-600">{inr(payNow)}</Text></View>
             </Card>
             <View className="mt-4"><ErrorText>{submitError}</ErrorText></View>
           </>
@@ -262,4 +295,3 @@ export default function BookingFlowScreen() {
     </View>
   );
 }
-

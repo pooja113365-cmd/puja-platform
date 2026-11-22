@@ -19,6 +19,9 @@ export default function BookingDetailScreen() {
   const [notice, setNotice] = useState<string | null>(null);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
+  const [ticketOpen, setTicketOpen] = useState(false);
+  const [ticketSubject, setTicketSubject] = useState('');
+  const [ticketDesc, setTicketDesc] = useState('');
 
   // Live tracking of status / pandit assignment via Socket.io
   useEffect(() => {
@@ -159,10 +162,16 @@ export default function BookingDetailScreen() {
 
       <Card className="mb-4">
         <Text className="mb-2 text-lg font-bold text-maroon-800">Payment</Text>
+        {(b.pricing.walletDiscount ?? 0) > 0 ? (
+          <View className="flex-row justify-between">
+            <Text className="text-sm font-semibold text-green-700">Referral Wallet Discount</Text>
+            <Text className="text-sm font-bold text-green-700">- {inr(b.pricing.walletDiscount)}</Text>
+          </View>
+        ) : null}
         <View className="flex-row justify-between"><Text className="text-sm text-maroon-800">Total</Text><Text className="text-sm font-bold text-maroon-800">{inr(b.pricing.total)}</Text></View>
         <View className="flex-row justify-between"><Text className="text-sm text-maroon-800">Paid</Text><Text className="text-sm text-maroon-800">{inr(b.payment.amountPaid)}</Text></View>
         <View className="mt-1 flex-row justify-between border-t border-gold-300/50 pt-1"><Text className="text-sm text-maroon-800">Balance</Text><Text className="text-sm font-bold text-maroon-800">{inr(due)}</Text></View>
-        {canPay ? <View className="mt-3"><Button title={`Pay ${inr(b.payment.status === 'unpaid' && b.paymentOption === 'advance' ? b.pricing.advanceAmount : due)}`} onPress={() => router.push(`/payment?bookingId=${b._id}`)} /></View> : null}
+        {canPay ? <View className="mt-3"><Button title={`Pay ${inr(b.payment.status === 'unpaid' && b.paymentOption === 'advance' ? b.pricing.advanceAmount : due)} via Razorpay`} onPress={() => router.push(`/payment?bookingId=${b._id}`)} /></View> : null}
       </Card>
 
       {b.status === 'completed' && !b.reviewed ? (
@@ -174,9 +183,48 @@ export default function BookingDetailScreen() {
         </Card>
       ) : null}
 
+      <Card className="mb-4 border-gold-300 bg-cream-100">
+        <Text className="mb-1 text-sm font-bold text-maroon-800">Need Help with Booking #{b.bookingNumber}?</Text>
+        <Text className="mb-2.5 text-xs text-maroon-700">
+          Raise a support ticket directly to the GetPuja Admin Panel for timing, pandit, or payment assistance.
+        </Text>
+        {!ticketOpen ? (
+          <Button title="🎫 Raise Support Ticket" variant="outline" onPress={() => setTicketOpen(true)} />
+        ) : (
+          <View className="mt-1">
+            <Field label="Subject *" value={ticketSubject} onChangeText={setTicketSubject} placeholder="e.g. Need to update time / Samagri query" />
+            <Field label="Describe your issue (min 10 chars) *" value={ticketDesc} onChangeText={setTicketDesc} multiline placeholder="Write details for the Admin team..." />
+            <View className="flex-row gap-2">
+              <View className="flex-1"><Button title="Cancel" variant="outline" onPress={() => setTicketOpen(false)} /></View>
+              <View className="flex-1">
+                <Button
+                  title="Submit Ticket"
+                  loading={busy}
+                  onPress={() =>
+                    run(async () => {
+                      await api.post('/disputes', {
+                        bookingId: b._id,
+                        category: 'booking_issue',
+                        priority: 'high',
+                        source: 'mobile_app',
+                        subject: ticketSubject.trim(),
+                        description: ticketDesc.trim(),
+                      });
+                      setTicketSubject('');
+                      setTicketDesc('');
+                      setTicketOpen(false);
+                    }, 'Support ticket submitted to the Admin Panel!')
+                  }
+                />
+              </View>
+            </View>
+          </View>
+        )}
+      </Card>
+
       {canCancel ? <Button title="Cancel booking" variant="danger" disabled={busy} onPress={confirmCancel} /> : null}
       <Text className="mt-6 text-center text-xs text-maroon-700">
-        <Ionicons name="shield-checkmark-outline" size={12} color={COLORS.maroon} /> Need help? support@pujaplatform.in
+        <Ionicons name="shield-checkmark-outline" size={12} color={COLORS.maroon} /> Need help? support@getpuja.com
       </Text>
     </ScrollView>
   );
